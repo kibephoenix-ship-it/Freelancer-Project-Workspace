@@ -1,0 +1,28 @@
+kind = "video"
+previewPath = "/freelancer-workspace-demo/"
+title = "Freelancer Workspace Demo"
+description = "A short animated product demo showing how Freelancer Workspace turns client conversations into projects, proposals, and invoices."
+version = "1.0.0"
+id = "artifacts/freelancer-workspace-demo"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/freelancer-workspace-demo/" ]
+localPort = 18820
+
+[services.development]
+run = "pnpm --filter @workspace/freelancer-workspace-demo run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/freelancer-workspace-demo", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/freelancer-workspace-demo/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18820"
+BASE_PATH = "/freelancer-workspace-demo/"
