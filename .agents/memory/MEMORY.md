@@ -1,0 +1,1 @@
+- [Zod and AI setup constraints](zod-and-ai-setup.md) — generated integer schemas need Zod 3-compatible handling; Gemini features need managed setup or secure key fallback.

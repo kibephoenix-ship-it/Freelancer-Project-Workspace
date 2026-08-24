@@ -10,6 +10,16 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: dashboard
+    description: Workspace overview
+  - name: clients
+    description: Client management
+  - name: projects
+    description: Project pipeline
+  - name: proposals
+    description: AI-assisted proposals
+  - name: invoices
+    description: Invoice tracking
 paths:
   /healthz:
     get:
@@ -24,7 +34,237 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get workspace summary
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+  /clients:
+    get:
+      operationId: listClients
+      tags: [clients]
+      summary: List clients
+      responses:
+        "200":
+          description: Client list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Client"
+    post:
+      operationId: createClient
+      tags: [clients]
+      summary: Create a client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientInput"
+      responses:
+        "201":
+          description: Created client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+  /clients/{id}:
+    patch:
+      operationId: updateClient
+      tags: [clients]
+      summary: Update a client
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientUpdate"
+      responses:
+        "200":
+          description: Updated client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+    delete:
+      operationId: deleteClient
+      tags: [clients]
+      summary: Delete a client
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Deleted
+  /projects:
+    get:
+      operationId: listProjects
+      tags: [projects]
+      summary: List projects with client names
+      responses:
+        "200":
+          description: Project list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+    post:
+      operationId: createProject
+      tags: [projects]
+      summary: Create a project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectInput"
+      responses:
+        "201":
+          description: Created project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+  /projects/{id}:
+    patch:
+      operationId: updateProject
+      tags: [projects]
+      summary: Update project status or details
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectUpdate"
+      responses:
+        "200":
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+    delete:
+      operationId: deleteProject
+      tags: [projects]
+      summary: Delete a project
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Deleted
+  /proposals:
+    get:
+      operationId: listProposals
+      tags: [proposals]
+      summary: List saved proposals
+      responses:
+        "200":
+          description: Proposal list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Proposal"
+    post:
+      operationId: generateProposal
+      tags: [proposals]
+      summary: Generate and save an AI proposal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProposalInput"
+      responses:
+        "201":
+          description: Generated proposal
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Proposal"
+  /invoices:
+    get:
+      operationId: listInvoices
+      tags: [invoices]
+      summary: List invoices
+      responses:
+        "200":
+          description: Invoice list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Invoice"
+    post:
+      operationId: createInvoice
+      tags: [invoices]
+      summary: Create an invoice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvoiceInput"
+      responses:
+        "201":
+          description: Created invoice
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invoice"
+  /invoices/{id}:
+    patch:
+      operationId: updateInvoice
+      tags: [invoices]
+      summary: Update invoice status or details
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvoiceUpdate"
+      responses:
+        "200":
+          description: Updated invoice
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invoice"
+    delete:
+      operationId: deleteInvoice
+      tags: [invoices]
+      summary: Delete an invoice
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Deleted
 components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
   schemas:
     HealthStatus:
       type: object
@@ -33,4 +273,123 @@ components:
           type: string
       required:
         - status
+    Client:
+      type: object
+      required: [id, name, email, company, createdAt]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string }
+        company: { type: ["string", "null"] }
+        createdAt: { type: string }
+    ClientInput:
+      type: object
+      required: [name, email]
+      properties:
+        name: { type: string, minLength: 1 }
+        email: { type: string, minLength: 1 }
+        company: { type: string }
+    ClientUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        email: { type: string, minLength: 1 }
+        company: { type: ["string", "null"] }
+    Project:
+      type: object
+      required: [id, clientId, clientName, title, budget, status, createdAt]
+      properties:
+        id: { type: string }
+        clientId: { type: string }
+        clientName: { type: string }
+        title: { type: string }
+        budget: { type: ["number", "null"] }
+        status:
+          type: string
+          enum: [lead, proposal_sent, active, completed, archived]
+        createdAt: { type: string }
+    ProjectInput:
+      type: object
+      required: [clientId, title]
+      properties:
+        clientId: { type: string }
+        title: { type: string, minLength: 1 }
+        budget: { type: number }
+        status:
+          type: string
+          enum: [lead, proposal_sent, active, completed, archived]
+    ProjectUpdate:
+      type: object
+      properties:
+        clientId: { type: string }
+        title: { type: string, minLength: 1 }
+        budget: { type: ["number", "null"] }
+        status:
+          type: string
+          enum: [lead, proposal_sent, active, completed, archived]
+    Proposal:
+      type: object
+      required: [id, projectId, projectTitle, scopeMarkdown, deliverables, isSigned, createdAt]
+      properties:
+        id: { type: string }
+        projectId: { type: string }
+        projectTitle: { type: string }
+        scopeMarkdown: { type: string }
+        deliverables:
+          type: array
+          items: { type: string }
+        isSigned: { type: boolean }
+        createdAt: { type: string }
+    ProposalInput:
+      type: object
+      required: [projectId, notes]
+      properties:
+        projectId: { type: string }
+        notes: { type: string, minLength: 1 }
+    Invoice:
+      type: object
+      required: [id, projectId, projectTitle, amount, status, dueDate, createdAt]
+      properties:
+        id: { type: string }
+        projectId: { type: string }
+        projectTitle: { type: string }
+        amount: { type: number }
+        status:
+          type: string
+          enum: [draft, sent, paid, overdue]
+        dueDate: { type: ["string", "null"] }
+        createdAt: { type: string }
+    InvoiceInput:
+      type: object
+      required: [projectId, amount]
+      properties:
+        projectId: { type: string }
+        amount: { type: number, minimum: 0 }
+        status:
+          type: string
+          enum: [draft, sent, paid, overdue]
+        dueDate: { type: string }
+    InvoiceUpdate:
+      type: object
+      properties:
+        amount: { type: number, minimum: 0 }
+        status:
+          type: string
+          enum: [draft, sent, paid, overdue]
+        dueDate: { type: ["string", "null"] }
+    Dashboard:
+      type: object
+      required: [totalClients, activeProjects, pipelineValue, outstandingAmount, projectsByStatus, recentProjects]
+      properties:
+        totalClients: { type: number }
+        activeProjects: { type: number }
+        pipelineValue: { type: number }
+        outstandingAmount: { type: number }
+        projectsByStatus:
+          type: object
+          additionalProperties: { type: number }
+        recentProjects:
+          type: array
+          items:
+            $ref: "#/components/schemas/Project"
 
