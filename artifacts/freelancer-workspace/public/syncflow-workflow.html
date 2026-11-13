@@ -1071,23 +1071,8 @@
 
     // --- Auth Modal Controls ---
     function openModal(mode) {
-      const modal = document.getElementById('auth-modal');
-      const title = document.getElementById('modal-title');
-      const subtitle = document.getElementById('modal-subtitle');
-      const btn = document.getElementById('modal-submit-btn');
-
-      if (mode === 'signin') {
-        title.textContent = 'Welcome back';
-        subtitle.textContent = 'Sign in to access your client workspaces and invoices.';
-        btn.textContent = 'Sign In to SyncFlow';
-      } else {
-        title.textContent = 'Create your workspace';
-        subtitle.textContent = 'Start your 14-day free Pro trial. No credit card needed.';
-        btn.textContent = 'Launch Free Workspace';
-      }
-
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
+      const path = mode === 'signin' ? '/login' : '/signup';
+      window.top.location.assign(path);
     }
 
     function closeModal() {

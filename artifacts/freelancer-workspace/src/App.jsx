@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import AuthPage from '@/components/auth-page';
 import {
   Clients,
   Invoices,
@@ -45,6 +46,8 @@ function Router() {
     <RoutedErrorBoundary>
       <Switch>
         <Route path="/" component={MarketingPage} />
+        <Route path="/login" component={AuthPage} />
+        <Route path="/signup" component={AuthPage} />
         <Route component={WorkspaceRoutes} />
       </Switch>
     </RoutedErrorBoundary>
