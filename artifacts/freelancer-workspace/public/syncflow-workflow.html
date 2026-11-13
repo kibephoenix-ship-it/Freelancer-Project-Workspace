@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SyncFlow — Unified Freelancer Workspace & Scope Protection</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts: Inter, Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            tealbrand: {
+              950: '#091C1C',
+              900: '#0E2828',
+              850: '#113030',
+              800: '#143636',
+              700: '#1C4747',
+            },
+            mint: {
+              300: '#B5E6CA',
+              400: '#9AD9B5',
+              500: '#78C299',
+              600: '#5AA47C',
+              700: '#4B8B6B',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Deep Forest Teal Studio Lighting & Glassmorphism */
+    body {
+      background-color: #0E2828;
+      color: #F4F8F7;
+    }
+    .studio-glow {
+      background: radial-gradient(circle at 72% 28%, rgba(120, 194, 153, 0.14) 0%, rgba(20, 54, 54, 0.45) 42%, rgba(9, 28, 28, 0.95) 100%);
+    }
+    .bg-grid-mint {
+      background-image: radial-gradient(rgba(120, 194, 153, 0.16) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+    .glass-nav {
+      background: rgba(14, 40, 40, 0.84);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .embossed-card {
+      background: linear-gradient(145deg, rgba(22, 59, 59, 0.88), rgba(11, 33, 33, 0.94));
+      border: 1px solid rgba(120, 194, 153, 0.22);
+      box-shadow: 0 20px 40px -15px rgba(4, 15, 15, 0.65), inset 0 1px 0 rgba(154, 217, 181, 0.12);
+    }
+    .embossed-card-hover {
+      transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .embossed-card-hover:hover {
+      border-color: rgba(120, 194, 153, 0.48);
+      transform: translateY(-2px);
+      box-shadow: 0 24px 48px -15px rgba(4, 15, 15, 0.8), 0 0 24px rgba(120, 194, 153, 0.08);
+    }
+    .tab-transition {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .logo-shadow {
+      filter: drop-shadow(0 4px 10px rgba(4, 15, 15, 0.55));
+    }
+  </style>
+</head>
+<body class="bg-tealbrand-900 text-[#F4F8F7] antialiased selection:bg-mint-500/30 selection:text-mint-300">
+
+  <!-- Toast Notification Container (Replaces alert) -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- 1. HIGH-CONVERTING SAAS HEADER WITH CUSTOM SYNCFLOW EMBLEM -->
+  <header class="sticky top-0 z-40 glass-nav border-b border-mint-500/20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        <!-- Custom SyncFlow Logo SVG + Wordmark -->
+        <a href="#" class="flex items-center gap-3.5 group">
+          <div class="w-11 h-11 relative flex items-center justify-center logo-shadow group-hover:scale-105 transition-transform duration-300">
+            <svg viewBox="0 0 120 120" class="w-full h-full overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="mintRingGrad" x1="15" y1="15" x2="105" y2="105" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#9AD9B5"/>
+                  <stop offset="55%" stop-color="#78C299"/>
+                  <stop offset="100%" stop-color="#4B8B6B"/>
+                </linearGradient>
+              </defs>
+              <!-- Outer Circle Ring -->
+              <circle cx="60" cy="60" r="52" stroke="url(#mintRingGrad)" stroke-width="3.2"/>
+              <!-- Multi-strand flowing S-ribbon wave inside ring -->
+              <g stroke="url(#mintRingGrad)" stroke-width="1.35" stroke-linecap="round">
+                <path d="M 16 86 C 36 86, 30 34, 52 44 C 72 53, 66 78, 84 68 C 96 61, 86 30, 106 39"/>
+                <path d="M 18 88 C 38 89, 32 37, 53 46 C 73 55, 67 80, 85 70 C 97 63, 88 32, 107 41" opacity="0.92"/>
+                <path d="M 20 90 C 40 92, 34 40, 54 48 C 74 57, 68 82, 86 72 C 98 65, 90 34, 108 43" opacity="0.84"/>
+                <path d="M 22 92 C 42 94, 36 43, 55 50 C 75 59, 69 84, 87 74 C 99 67, 92 36, 109 45" opacity="0.76"/>
+                <path d="M 24 93 C 44 96, 38 46, 56 52 C 76 61, 70 86, 88 76 C 100 69, 94 38, 109 47" opacity="0.68"/>
+                <path d="M 26 94 C 46 97, 40 49, 57 54 C 77 63, 71 87, 89 77 C 101 70, 96 40, 110 49" opacity="0.6"/>
+              </g>
+            </svg>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-display font-bold text-lg sm:text-xl tracking-[0.22em] text-white leading-none uppercase">
+              SYNCFLOW
+            </span>
+            <span class="font-display font-semibold text-[9px] sm:text-[10px] tracking-[0.34em] text-mint-500 mt-1.5 leading-none uppercase">
+              SINCE 2026
+            </span>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation -->
+        <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+          <a href="#features" class="hover:text-mint-400 transition-colors">Features</a>
+          <a href="#workspace-demo" class="hover:text-mint-400 transition-colors flex items-center gap-2">
+            Workspace Preview
+            <span class="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider bg-mint-500/15 text-mint-400 border border-mint-500/30 rounded-full">Live</span>
+          </a>
+          <a href="#pricing" class="hover:text-mint-400 transition-colors">Pricing</a>
+        </nav>
+
+        <!-- Auth & Primary CTA -->
+        <div class="hidden md:flex items-center gap-4">
+          <button onclick="openModal('signin')" class="text-sm font-medium text-slate-300 hover:text-white px-3 py-2 transition-colors">
+            Sign In
+          </button>
+          <button onclick="openModal('signup')" class="inline-flex items-center gap-2 bg-mint-500 hover:bg-mint-400 text-tealbrand-950 text-sm font-bold px-4 py-2.5 rounded-xl shadow-lg shadow-mint-500/20 transition-all hover:-translate-y-0.5">
+            <span>Get Started</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg text-mint-400 hover:bg-tealbrand-800">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Drawer -->
+    <div id="mobile-menu" class="hidden md:hidden bg-tealbrand-950 border-b border-mint-500/20 px-4 pt-2 pb-5 space-y-3">
+      <a href="#features" class="block py-2 text-base font-medium text-slate-200 hover:text-mint-400">Features</a>
+      <a href="#workspace-demo" class="block py-2 text-base font-medium text-slate-200 hover:text-mint-400">Workspace Preview</a>
+      <a href="#pricing" class="block py-2 text-base font-medium text-slate-200 hover:text-mint-400">Pricing</a>
+      <div class="pt-3 border-t border-mint-500/15 flex flex-col gap-2">
+        <button onclick="openModal('signin')" class="w-full py-2.5 text-center font-medium text-slate-200 border border-mint-500/30 rounded-xl hover:bg-tealbrand-800">Sign In</button>
+        <button onclick="openModal('signup')" class="w-full py-2.5 text-center font-bold text-tealbrand-950 bg-mint-500 rounded-xl">Get Started Free</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 2. HERO SECTION + AMBIENT FLOWING WAVE RIBBONS + MINI LIVE WIDGET -->
+  <section class="relative overflow-hidden pt-16 pb-24 lg:pt-24 lg:pb-32 bg-grid-mint">
+    <!-- Studio Radial Lighting Overlay -->
+    <div class="absolute inset-0 studio-glow pointer-events-none"></div>
+
+    <!-- Decorative Ambient Multi-Strand SVG Wave Motifs (Echoing the Logo) -->
+    <svg class="absolute -bottom-12 left-0 w-full h-72 opacity-20 pointer-events-none" viewBox="0 0 1440 320" fill="none" preserveAspectRatio="none">
+      <g stroke="#78C299" stroke-width="1.2">
+        <path d="M-80 260 C 240 280, 360 90, 680 150 C 980 210, 1120 40, 1520 110"/>
+        <path d="M-80 272 C 250 292, 370 102, 690 162 C 990 222, 1130 52, 1520 122" opacity="0.85"/>
+        <path d="M-80 284 C 260 304, 380 114, 700 174 C 1000 234, 1140 64, 1520 134" opacity="0.7"/>
+        <path d="M-80 296 C 270 316, 390 126, 710 186 C 1010 246, 1150 76, 1520 146" opacity="0.55"/>
+        <path d="M-80 308 C 280 328, 400 138, 720 198 C 1020 258, 1160 88, 1520 158" opacity="0.4"/>
+      </g>
+    </svg>
+
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid lg:grid-cols-12 gap-12 lg:gap-10 items-center">
+        
+        <!-- Left Value Proposition -->
+        <div class="lg:col-span-7 text-center lg:text-left">
+          <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-tealbrand-800/90 border border-mint-500/30 text-mint-400 text-xs font-semibold tracking-wide mb-6 shadow-sm">
+            <span class="flex h-2 w-2 rounded-full bg-mint-500 animate-pulse"></span>
+            Built for independent designers, developers & consultants
+          </div>
+
+          <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.12] mb-6">
+            Manage clients, scope projects, and automate workflows in <span class="text-transparent bg-clip-text bg-gradient-to-r from-mint-300 via-mint-500 to-emerald-300">one unified workspace.</span>
+          </h1>
+
+          <p class="text-lg sm:text-xl text-slate-300/90 max-w-2xl mx-auto lg:mx-0 mb-9 leading-relaxed">
+            Stop losing billable hours to silent scope creep and scattered tools. SyncFlow harmonizes client approvals, milestone tracking, and instant invoicing in a single calm command center.
+          </p>
+
+          <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 mb-10">
+            <button onclick="openModal('signup')" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-mint-500 hover:bg-mint-400 text-tealbrand-950 font-bold text-base shadow-xl shadow-mint-500/20 transition-all hover:-translate-y-0.5">
+              Start Free 14-Day Trial
+              <i data-lucide="sparkles" class="w-4 h-4"></i>
+            </button>
+            <a href="#workspace-demo" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl bg-tealbrand-800/80 hover:bg-tealbrand-700/80 text-white font-semibold text-base border border-mint-500/30 shadow-sm transition-all">
+              <i data-lucide="play-circle" class="w-5 h-5 text-mint-400"></i>
+              Try Interactive Demo
+            </a>
+          </div>
+
+          <!-- Social Proof Strip -->
+          <div class="flex flex-wrap items-center justify-center lg:justify-start gap-6 text-sm text-slate-300">
+            <div class="flex items-center gap-2">
+              <i data-lucide="check-circle-2" class="w-4 h-4 text-mint-500"></i>
+              <span>No credit card required</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i data-lucide="check-circle-2" class="w-4 h-4 text-mint-500"></i>
+              <span>Automated scope alerts</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <i data-lucide="check-circle-2" class="w-4 h-4 text-mint-500"></i>
+              <span>1-click Stripe payouts</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Interactive Live Dashboard Preview Card -->
+        <div class="lg:col-span-5">
+          <div class="embossed-card rounded-2xl p-6 sm:p-7 relative">
+            <!-- Floating Scope Alert Badge -->
+            <div class="absolute -top-4 -right-2 sm:-right-4 bg-tealbrand-950 border border-mint-500/50 text-mint-300 px-3.5 py-2 rounded-xl shadow-xl flex items-center gap-2.5 text-xs font-semibold">
+              <span class="w-2.5 h-2.5 rounded-full bg-mint-500 animate-ping"></span>
+              <span>Scope Guard Active</span>
+            </div>
+
+            <!-- Widget Header -->
+            <div class="flex items-center justify-between pb-4 mb-5 border-b border-mint-500/15">
+              <div>
+                <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-mint-500">Live Pulse Snapshot</p>
+                <h3 class="font-display font-bold text-white text-lg mt-0.5">November Revenue & Scope</h3>
+              </div>
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-mono font-semibold bg-mint-500/15 text-mint-300 border border-mint-500/30">
+                <i data-lucide="trending-up" class="w-3.5 h-3.5"></i> +18.4%
+              </span>
+            </div>
+
+            <!-- Quick Metric Grid -->
+            <div class="grid grid-cols-2 gap-3.5 mb-5">
+              <div class="p-4 rounded-xl bg-tealbrand-950/70 border border-mint-500/15">
+                <span class="text-xs text-slate-400 block mb-1">Billable Pipeline</span>
+                <span class="font-mono font-bold text-2xl text-white">$14,850</span>
+                <span class="text-[11px] text-mint-400 font-medium block mt-1">3 active retainers</span>
+              </div>
+              <div class="p-4 rounded-xl bg-mint-500/10 border border-mint-500/25">
+                <span class="text-xs text-mint-300 block mb-1">Scope Health</span>
+                <span class="font-mono font-bold text-2xl text-white">94%</span>
+                <span class="text-[11px] text-mint-400 font-medium block mt-1">0 unbilled revisions</span>
+              </div>
+            </div>
+
+            <!-- Interactive Quick Scope Simulator inside Hero Card -->
+            <div class="bg-tealbrand-950/90 border border-mint-500/20 rounded-xl p-4">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-medium text-slate-200 flex items-center gap-1.5">
+                  <i data-lucide="shield-alert" class="w-4 h-4 text-mint-400"></i>
+                  Client Request Simulator
+                </span>
+                <span id="hero-budget-tag" class="text-xs font-mono bg-mint-500/15 border border-mint-500/30 px-2 py-0.5 rounded text-mint-300">Within Scope</span>
+              </div>
+              <p class="text-xs text-slate-400 mb-3">Test what happens when a client requests an extra landing page mid-sprint:</p>
+              <div class="flex items-center justify-between gap-2">
+                <button id="hero-sim-btn" onclick="simulateHeroScope()" class="w-full py-2.5 px-3 rounded-lg bg-mint-500 hover:bg-mint-400 text-xs font-bold text-tealbrand-950 transition-colors flex items-center justify-center gap-1.5 shadow-md shadow-mint-500/15">
+                  <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+                  <span>Simulate Extra Client Request (+$650)</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. INTERACTIVE FREELANCER WORKSPACE DEMO SECTION -->
+  <section id="workspace-demo" class="py-24 bg-tealbrand-950 border-y border-mint-500/20 relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Heading -->
+      <div class="max-w-3xl mx-auto text-center mb-14">
+        <span class="text-xs font-bold uppercase tracking-[0.25em] text-mint-500">Interactive Sandbox</span>
+        <h2 class="font-display text-3xl sm:text-4xl font-extrabold text-white mt-2.5 mb-4">
+          Experience your calm command center
+        </h2>
+        <p class="text-slate-300 text-base sm:text-lg">
+          Switch between active client workspaces below. Check off deliverables, monitor scope buffers in real time, and trigger automated change-order invoices.
+        </p>
+      </div>
+
+      <!-- Interactive App Shell -->
+      <div class="embossed-card rounded-2xl overflow-hidden">
+        
+        <!-- Top Window Bar -->
+        <div class="bg-[#071515] text-slate-300 px-4 py-3.5 flex flex-wrap items-center justify-between gap-4 border-b border-mint-500/20">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-rose-400/80"></span>
+            <span class="w-3 h-3 rounded-full bg-amber-400/80"></span>
+            <span class="w-3 h-3 rounded-full bg-mint-500"></span>
+            <span class="ml-2 text-xs font-mono text-mint-400/80 hidden sm:inline">app.syncflow.io/workspace/active-sprints</span>
+          </div>
+
+          <!-- Client Project Switcher Tabs -->
+          <div class="flex items-center gap-1.5 bg-tealbrand-900/90 border border-mint-500/20 p-1 rounded-xl overflow-x-auto max-w-full" id="project-tabs">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Workspace Body -->
+        <div class="grid lg:grid-cols-12">
+          
+          <!-- Left Sidebar: Project Summary & Scope Meter -->
+          <div class="lg:col-span-4 bg-tealbrand-900/75 p-6 border-b lg:border-b-0 lg:border-r border-mint-500/20 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <span id="ws-client-badge" class="px-2.5 py-1 rounded-md text-xs font-semibold bg-mint-500/15 text-mint-300 border border-mint-500/30">Fintech Retainer</span>
+                <span id="ws-due-date" class="text-xs font-mono text-slate-400 flex items-center gap-1.5">
+                  <i data-lucide="calendar" class="w-3.5 h-3.5 text-mint-500"></i> Due Nov 28
+                </span>
+              </div>
+
+              <h3 id="ws-project-title" class="font-display font-bold text-xl text-white mb-1">
+                NovaPay Mobile Web Redesign
+              </h3>
+              <p id="ws-client-name" class="text-sm text-slate-400 mb-6">Client: NovaPay Technologies</p>
+
+              <!-- Scope Creep Meter -->
+              <div class="p-4 rounded-xl bg-tealbrand-950/85 border border-mint-500/20 mb-6">
+                <div class="flex items-center justify-between text-xs font-semibold mb-2">
+                  <span class="text-slate-200 flex items-center gap-1.5">
+                    <i data-lucide="gauge" class="w-4 h-4 text-mint-500"></i>
+                    Scope & Hours Utilization
+                  </span>
+                  <span id="ws-scope-percent" class="font-mono text-mint-400">68% Used</span>
+                </div>
+                
+                <div class="w-full h-2.5 bg-tealbrand-800 rounded-full overflow-hidden mb-2.5">
+                  <div id="ws-scope-bar" class="h-full bg-mint-500 rounded-full transition-all duration-500" style="width: 68%"></div>
+                </div>
+
+                <div class="flex items-center justify-between text-[11px] text-slate-400">
+                  <span id="ws-hours-text" class="font-mono">27.2 / 40.0 hrs logged</span>
+                  <span id="ws-scope-status-label" class="font-medium text-mint-400">Healthy Buffer</span>
+                </div>
+
+                <!-- Scope Creep Action Button -->
+                <button onclick="addScopeChangeRequest()" class="mt-4 w-full py-2.5 px-3 rounded-lg border border-mint-500/35 bg-mint-500/10 hover:bg-mint-500/20 text-mint-300 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5">
+                  <i data-lucide="file-plus-2" class="w-3.5 h-3.5"></i>
+                  Log Out-of-Scope Request (+4 hrs)
+                </button>
+              </div>
+            </div>
+
+            <!-- Invoice Status Card -->
+            <div class="p-4 rounded-xl border border-mint-500/25 bg-gradient-to-br from-tealbrand-800/80 to-tealbrand-950">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Invoice Status</span>
+                <span id="ws-invoice-pill" class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-mint-500/20 text-mint-300 border border-mint-500/30">
+                  Deposit Paid
+                </span>
+              </div>
+              <div class="flex items-baseline justify-between mb-3.5">
+                <span id="ws-invoice-amount" class="font-mono font-bold text-2xl text-white">$4,800.00</span>
+                <span id="ws-invoice-id" class="text-xs font-mono text-slate-400">#INV-204</span>
+              </div>
+              <button id="ws-invoice-btn" onclick="triggerInvoiceAction()" class="w-full py-2.5 px-4 rounded-xl bg-mint-500 hover:bg-mint-400 text-tealbrand-950 text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-md shadow-mint-500/15">
+                <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                <span>Send Milestone Invoice</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Right Main Panel: Interactive Deliverables & Milestone Checklist -->
+          <div class="lg:col-span-8 p-6 sm:p-8 flex flex-col justify-between bg-tealbrand-900/40">
+            <div>
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 mb-6 border-b border-mint-500/15">
+                <div>
+                  <h4 class="font-display font-bold text-lg text-white">Deliverables & Client Approval Checklist</h4>
+                  <p class="text-xs text-slate-400 mt-0.5">Click any milestone to toggle completion or add a new task to this sprint.</p>
+                </div>
+                <div class="flex items-center gap-2 text-xs font-mono font-semibold text-mint-300 bg-tealbrand-950/90 px-3.5 py-1.5 rounded-lg border border-mint-500/25">
+                  <i data-lucide="check-square" class="w-4 h-4 text-mint-500"></i>
+                  <span id="ws-task-counter">2 of 4 Completed</span>
+                </div>
+              </div>
+
+              <!-- Checklist Container -->
+              <div id="ws-checklist" class="space-y-3 mb-6">
+                <!-- Populated dynamically via JavaScript -->
+              </div>
+
+              <!-- Add New Deliverable Form -->
+              <form onsubmit="handleAddTask(event)" class="flex flex-col sm:flex-row gap-2.5">
+                <input 
+                  type="text" 
+                  id="new-task-input" 
+                  placeholder="Add a new deliverable or client milestone..." 
+                  class="flex-1 px-4 py-2.5 rounded-xl bg-tealbrand-950/90 border border-mint-500/25 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-mint-500 focus:border-mint-500"
+                  required
+                />
+                <select id="new-task-tag" class="px-3 py-2.5 rounded-xl bg-tealbrand-950/90 border border-mint-500/25 text-xs font-medium text-slate-200 focus:outline-none focus:ring-2 focus:ring-mint-500">
+                  <option value="In Scope">In Scope</option>
+                  <option value="Add-On (+$350)">Add-On (+$350)</option>
+                  <option value="Client Review">Client Review</option>
+                </select>
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-mint-500 hover:bg-mint-400 text-tealbrand-950 text-sm font-bold transition-colors inline-flex items-center justify-center gap-1.5">
+                  <i data-lucide="plus" class="w-4 h-4"></i>
+                  Add Item
+                </button>
+              </form>
+            </div>
+
+            <!-- Live Client Portal Sync Footer -->
+            <div class="mt-8 pt-4 border-t border-mint-500/15 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-mint-500"></span>
+                <span>Synced with Client Portal link: <strong class="font-mono text-mint-300">portal.syncflow.io/novapay</strong></span>
+              </div>
+              <button onclick="copyPortalLink()" class="text-mint-400 hover:text-mint-300 font-semibold inline-flex items-center gap-1">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copy Client View Link
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. CORE FEATURES GRID -->
+  <section id="features" class="py-24 bg-tealbrand-900 relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <div class="max-w-3xl mx-auto text-center mb-16">
+        <span class="text-xs font-bold uppercase tracking-[0.25em] text-mint-500">Purpose-Built Workflow</span>
+        <h2 class="font-display text-3xl sm:text-4xl font-extrabold text-white mt-2.5 mb-4">
+          Everything you need to run a high-margin solo practice
+        </h2>
+        <p class="text-slate-300 text-base sm:text-lg">
+          Replace bloated enterprise project boards and clunky PDF invoices with four tightly integrated tools designed for rhythmic flow.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- Feature 1: Client Portal -->
+        <div class="embossed-card embossed-card-hover rounded-2xl p-6">
+          <div class="w-12 h-12 rounded-xl bg-mint-500/15 border border-mint-500/30 text-mint-400 flex items-center justify-center mb-5">
+            <i data-lucide="layout-dashboard" class="w-6 h-6"></i>
+          </div>
+          <h3 class="font-display font-bold text-lg text-white mb-2">Branded Client Portal</h3>
+          <p class="text-sm text-slate-300/90 leading-relaxed mb-4">
+            Give every client a magic-link dashboard to review mockups, sign off on milestones, and access files—no client passwords required.
+          </p>
+          <span class="text-xs font-semibold text-mint-400 inline-flex items-center gap-1">
+            Custom domain ready <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+          </span>
+        </div>
+
+        <!-- Feature 2: Scope Protection -->
+        <div class="embossed-card embossed-card-hover rounded-2xl p-6">
+          <div class="w-12 h-12 rounded-xl bg-mint-500/15 border border-mint-500/30 text-mint-400 flex items-center justify-center mb-5">
+            <i data-lucide="shield-check" class="w-6 h-6"></i>
+          </div>
+          <h3 class="font-display font-bold text-lg text-white mb-2">Scope Protection</h3>
+          <p class="text-sm text-slate-300/90 leading-relaxed mb-4">
+            Automatically flag out-of-scope requests and convert them into one-click paid change orders before you write a single extra line of code.
+          </p>
+          <span class="text-xs font-semibold text-mint-400 inline-flex items-center gap-1">
+            Protects +22% margin <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+          </span>
+        </div>
+
+        <!-- Feature 3: Automated Invoicing -->
+        <div class="embossed-card embossed-card-hover rounded-2xl p-6">
+          <div class="w-12 h-12 rounded-xl bg-mint-500/15 border border-mint-500/30 text-mint-400 flex items-center justify-center mb-5">
+            <i data-lucide="receipt" class="w-6 h-6"></i>
+          </div>
+          <h3 class="font-display font-bold text-lg text-white mb-2">Automated Invoicing</h3>
+          <p class="text-sm text-slate-300/90 leading-relaxed mb-4">
+            Trigger deposits on contract signature and final invoices the moment a milestone is marked complete, with native Stripe & ACH payouts.
+          </p>
+          <span class="text-xs font-semibold text-mint-400 inline-flex items-center gap-1">
+            Auto-reminders included <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+          </span>
+        </div>
+
+        <!-- Feature 4: Time & Milestone Tracking -->
+        <div class="embossed-card embossed-card-hover rounded-2xl p-6">
+          <div class="w-12 h-12 rounded-xl bg-mint-500/15 border border-mint-500/30 text-mint-400 flex items-center justify-center mb-5">
+            <i data-lucide="timer" class="w-6 h-6"></i>
+          </div>
+          <h3 class="font-display font-bold text-lg text-white mb-2">Time & Milestone Tracking</h3>
+          <p class="text-sm text-slate-300/90 leading-relaxed mb-4">
+            Lightweight sprint timers tied directly to deliverables so you always know your effective hourly rate across fixed-fee and retainer work.
+          </p>
+          <span class="text-xs font-semibold text-mint-400 inline-flex items-center gap-1">
+            Real-time profitability <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+          </span>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. TRANSPARENT PRICING SECTION -->
+  <section id="pricing" class="py-24 bg-tealbrand-950 border-t border-mint-500/20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="max-w-3xl mx-auto text-center mb-12">
+        <span class="text-xs font-bold uppercase tracking-[0.25em] text-mint-500">Simple, Predictable Pricing</span>
+        <h2 class="font-display text-3xl sm:text-4xl font-extrabold text-white mt-2.5 mb-4">
+          Pays for itself on your very first change order
+        </h2>
+        <p class="text-slate-300 text-base sm:text-lg mb-8">
+          Start free for 14 days. Upgrade, downgrade, or cancel anytime with one click.
+        </p>
+
+        <!-- Monthly / Annual Billing Toggle -->
+        <div class="inline-flex items-center gap-2 bg-tealbrand-900 p-1.5 rounded-xl border border-mint-500/25">
+          <button id="btn-monthly" onclick="setBillingCycle('monthly')" class="px-4 py-2 rounded-lg text-sm font-bold bg-mint-500 text-tealbrand-950 shadow-sm transition-all">
+            Monthly
+          </button>
+          <button id="btn-annual" onclick="setBillingCycle('annual')" class="px-4 py-2 rounded-lg text-sm font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-1.5">
+            Annual
+            <span class="px-2 py-0.5 text-[11px] font-bold bg-mint-500/20 text-mint-300 border border-mint-500/30 rounded-full">Save 20%</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Pricing Cards Grid -->
+      <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
+        
+        <!-- Tier 1: Starter / Solo -->
+        <div class="embossed-card rounded-2xl p-8 flex flex-col justify-between">
+          <div>
+            <h3 class="font-display font-bold text-xl text-white">Starter</h3>
+            <p class="text-sm text-slate-400 mt-1">For new freelancers organizing their first recurring clients.</p>
+            <div class="my-6 flex items-baseline gap-1">
+              <span class="font-mono font-extrabold text-4xl text-white price-value" data-monthly="15" data-annual="12">$15</span>
+              <span class="text-sm text-slate-400">/month</span>
+            </div>
+            <ul class="space-y-3.5 text-sm text-slate-300 mb-8">
+              <li class="flex items-center gap-2.5"><i data-lucide="check" class="w-4 h-4 text-mint-500 shrink-0"></i> Up to 3 active client portals</li>
+              <li class="flex items-center gap-2.5"><i data-lucide="check" class="w-4 h-4 text-mint-500 shrink-0"></i> Milestone & task checklists</li>
+              <li class="flex items-center gap-2.5"><i data-lucide="check" class="w-4 h-4 text-mint-500 shrink-0"></i> Basic Stripe & PayPal invoicing</li>
+              <li class="flex items-center gap-2.5"><i data-lucide="check" class="w-4 h-4 text-mint-500 shrink-0"></i> Time tracking & export</li>
+            </ul>
+          </div>
+          <button onclick="openModal('signup')" class="w-full py-3 px-4 rounded-xl border border-mint-500/35 hover:bg-mint-500/15 text-mint-300 font-semibold text-sm transition-colors">
+            Start Free Trial
+          </button>
+        </div>
+
+        <!-- Tier 2: Pro Freelancer (Highlighted) -->
+        <div class="rounded-2xl border-2 border-mint-500 bg-gradient-to-b from-tealbrand-800 to-tealbrand-950 text-white p-8 flex flex-col justify-between shadow-2xl shadow-mint-500/15 relative">
+          <div class="absolute -top-3.5 right-6 bg-mint-500 text-tealbrand-950 text-xs font-extrabold uppercase tracking-wider px-3.5 py-1 rounded-full shadow">
+            Most Popular
+          </div>
+          <div>
+            <h3 class="font-display font-bold text-xl text-white">Pro Freelancer</h3>
+            <p class="text-sm text-mint-300/90 mt-1">Full scope protection & automation for busy independents.</p>
+            <div class="my-6 flex items-baseline gap-1">
+              <span class="font-mono font-extrabold text-4xl text-white price-value" data-monthly="29" data-annual="23">$29</span>
+              <span class="text-sm text-slate-300">/month</span>
+            </div>
+            <ul class="space-y-3.5 text-sm text-slate-100 mb-8">
+              <li class="flex items-center gap-2.5"><i data-lucide="check" class="w-4 h-4 text-mint-400 shrink-0"></i> <strong>Unlimited</strong> active clients & projects</li>
+              <li class="flex items-center gap-2.5"><i data-lucide="check" class="w-4 h-4 text-mint-400 shrink-0"></i> Automated Scope Creep Alerts & Add-ons</li>
+              <li class="flex items-center gap-2.5"><i data-lucide="check" class="w-4 h-4 text-mint-400 shrink-0"></i> Custom domain client portal</li>
+              <li class="flex items-center gap-2.5"><i data-lucide="check" class="w-4 h-4 text-mint-400 shrink-0"></i> Automated recurring retainer billing</li>
+              <li class="flex items-center gap-2.5"><i data-lucide="check" class="w-4 h-4 text-mint-400 shrink-0"></i> 0% SyncFlow platform fee</li>
+            </ul>
+          </div>
+          <button onclick="openModal('signup')" class="w-full py-3.5 px-4 rounded-xl bg-mint-500 hover:bg-mint-400 text-tealbrand-950 font-bold text-sm shadow-lg shadow-mint-500/25 transition-all">
+            Get Started with Pro
+          </button>
+        </div>
+
+        <!-- Tier 3: Studio -->
+        <div class="embossed-card rounded-2xl p-8 flex flex-col justify-between">
+          <div>
+            <h3 class="font-display font-bold text-xl text-white">Studio</h3>
+            <p class="text-sm text-slate-400 mt-1">For micro-agencies and consultants collaborating with contractors.</p>
+            <div class="my-6 flex items-baseline gap-1">
+              <span class="font-mono font-extrabold text-4xl text-white price-value" data-monthly="59" data-annual="47">$59</span>
+              <span class="text-sm text-slate-400">/month</span>
+            </div>
+            <ul class="space-y-3.5 text-sm text-slate-300 mb-8">
+              <li class="flex items-center gap-2.5"><i data-lucide="check" class="w-4 h-4 text-mint-500 shrink-0"></i> Everything in Pro Freelancer</li>
+              <li class="flex items-center gap-2.5"><i data-lucide="check" class="w-4 h-4 text-mint-500 shrink-0"></i> Up to 5 team / subcontractor seats</li>
+              <li class="flex items-center gap-2.5"><i data-lucide="check" class="w-4 h-4 text-mint-500 shrink-0"></i> White-label client emails & PDFs</li>
+              <li class="flex items-center gap-2.5"><i data-lucide="check" class="w-4 h-4 text-mint-500 shrink-0"></i> Priority Slack & onboarding support</li>
+            </ul>
+          </div>
+          <button onclick="openModal('signup')" class="w-full py-3 px-4 rounded-xl border border-mint-500/35 hover:bg-mint-500/15 text-mint-300 font-semibold text-sm transition-colors">
+            Start Studio Trial
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. MODERN FOOTER WITH FULL SYNCFLOW — SINCE 2026 EMBLEM -->
+  <footer id="footer" class="bg-[#061414] text-slate-400 pt-16 pb-12 border-t border-mint-500/20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 pb-12 border-b border-mint-500/15">
+        
+        <!-- Brand Column with Full Logo Lockup -->
+        <div class="lg:col-span-4">
+          <a href="#" class="inline-flex items-center gap-3.5 mb-5 group">
+            <div class="w-11 h-11 logo-shadow">
+              <svg viewBox="0 0 120 120" class="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="60" cy="60" r="52" stroke="#78C299" stroke-width="3.2"/>
+                <g stroke="#78C299" stroke-width="1.35" stroke-linecap="round">
+                  <path d="M 16 86 C 36 86, 30 34, 52 44 C 72 53, 66 78, 84 68 C 96 61, 86 30, 106 39"/>
+                  <path d="M 18 88 C 38 89, 32 37, 53 46 C 73 55, 67 80, 85 70 C 97 63, 88 32, 107 41" opacity="0.9"/>
+                  <path d="M 20 90 C 40 92, 34 40, 54 48 C 74 57, 68 82, 86 72 C 98 65, 90 34, 108 43" opacity="0.8"/>
+                  <path d="M 22 92 C 42 94, 36 43, 55 50 C 75 59, 69 84, 87 74 C 99 67, 92 36, 109 45" opacity="0.7"/>
+                  <path d="M 24 93 C 44 96, 38 46, 56 52 C 76 61, 70 86, 88 76 C 100 69, 94 38, 109 47" opacity="0.6"/>
+                </g>
+              </svg>
+            </div>
+            <div class="flex flex-col">
+              <span class="font-display font-bold text-lg tracking-[0.22em] text-white leading-none uppercase">SYNCFLOW</span>
+              <span class="font-display font-semibold text-[10px] tracking-[0.34em] text-mint-500 mt-1.5 leading-none uppercase">SINCE 2026</span>
+            </div>
+          </a>
+          <p class="text-sm text-slate-400 leading-relaxed max-w-sm mb-6">
+            The calm, all-in-one operating system for independent professionals. Protect your scope, delight your clients, and get paid faster.
+          </p>
+          <div class="flex items-center gap-3">
+            <a href="#footer" aria-label="Twitter" class="p-2.5 rounded-lg bg-tealbrand-900 border border-mint-500/20 hover:border-mint-500/50 text-slate-400 hover:text-mint-400 transition-colors">
+              <i data-lucide="twitter" class="w-4 h-4"></i>
+            </a>
+            <a href="#footer" aria-label="GitHub" class="p-2.5 rounded-lg bg-tealbrand-900 border border-mint-500/20 hover:border-mint-500/50 text-slate-400 hover:text-mint-400 transition-colors">
+              <i data-lucide="github" class="w-4 h-4"></i>
+            </a>
+            <a href="#footer" aria-label="LinkedIn" class="p-2.5 rounded-lg bg-tealbrand-900 border border-mint-500/20 hover:border-mint-500/50 text-slate-400 hover:text-mint-400 transition-colors">
+              <i data-lucide="linkedin" class="w-4 h-4"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Links Columns -->
+        <div class="lg:col-span-2">
+          <h4 class="text-white font-semibold text-sm mb-4">Product</h4>
+          <ul class="space-y-2.5 text-sm">
+            <li><a href="#features" class="hover:text-mint-400 transition-colors">Client Portal</a></li>
+            <li><a href="#features" class="hover:text-mint-400 transition-colors">Scope Protection</a></li>
+            <li><a href="#workspace-demo" class="hover:text-mint-400 transition-colors">Interactive Demo</a></li>
+            <li><a href="#pricing" class="hover:text-mint-400 transition-colors">Pricing</a></li>
+          </ul>
+        </div>
+
+        <div class="lg:col-span-2">
+          <h4 class="text-white font-semibold text-sm mb-4">Resources</h4>
+          <ul class="space-y-2.5 text-sm">
+            <li><a href="#features" class="hover:text-mint-400 transition-colors">Scope Creep Guide</a></li>
+            <li><a href="#features" class="hover:text-mint-400 transition-colors">Freelance Rate Calc</a></li>
+            <li><a href="#features" class="hover:text-mint-400 transition-colors">Contract Templates</a></li>
+            <li><a href="#features" class="hover:text-mint-400 transition-colors">System Status</a></li>
+          </ul>
+        </div>
+
+        <!-- Newsletter Column -->
+        <div class="lg:col-span-4">
+          <h4 class="text-white font-semibold text-sm mb-2">The Independent Dispatch</h4>
+          <p class="text-sm text-slate-400 mb-4">
+            Weekly actionable playbooks on client management, pricing strategy, and solo profitability.
+          </p>
+          <form onsubmit="handleNewsletter(event)" class="flex flex-col sm:flex-row gap-2">
+            <input 
+              type="email" 
+              id="newsletter-email"
+              required 
+              placeholder="you@studio.com" 
+              class="flex-1 px-4 py-2.5 rounded-xl bg-tealbrand-900 border border-mint-500/25 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-mint-500"
+            />
+            <button type="submit" class="px-5 py-2.5 rounded-xl bg-mint-500 hover:bg-mint-400 text-tealbrand-950 text-sm font-bold transition-colors shrink-0">
+              Subscribe
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+      <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+        <p>&copy; 2026 SyncFlow Inc. Crafted since 2026.</p>
+        <div class="flex items-center gap-6">
+          <a href="#" class="hover:text-mint-400">Privacy Policy</a>
+          <a href="#" class="hover:text-mint-400">Terms of Service</a>
+          <a href="#" class="hover:text-mint-400">Security</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- AUTH / TRIAL MODAL -->
+  <div id="auth-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-[#040E0E]/80 backdrop-blur-md p-4">
+    <div class="embossed-card rounded-2xl max-w-md w-full p-6 sm:p-8 relative">
+      <button onclick="closeModal()" class="absolute top-4 right-4 p-2 rounded-lg text-slate-400 hover:text-white hover:bg-tealbrand-800">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-5">
+        <div class="w-9 h-9">
+          <svg viewBox="0 0 120 120" class="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="60" cy="60" r="52" stroke="#78C299" stroke-width="3.5"/>
+            <path d="M 18 88 C 38 89, 32 37, 53 46 C 73 55, 67 80, 85 70 C 97 63, 88 32, 107 41" stroke="#78C299" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-display font-bold text-base tracking-[0.2em] text-white leading-none">SYNCFLOW</span>
+          <span class="font-display font-semibold text-[9px] tracking-[0.3em] text-mint-500 mt-1 leading-none">SINCE 2026</span>
+        </div>
+      </div>
+
+      <h3 id="modal-title" class="font-display font-bold text-2xl text-white mb-1">Create your workspace</h3>
+      <p id="modal-subtitle" class="text-sm text-slate-300 mb-6">Start your 14-day free Pro trial. No credit card needed.</p>
+
+      <form onsubmit="handleAuthSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-mint-300 mb-1.5">Work Email</label>
+          <input type="email" required placeholder="alex@designstudio.co" class="w-full px-3.5 py-2.5 rounded-xl bg-tealbrand-950 border border-mint-500/30 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-mint-500" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-mint-300 mb-1.5">Password</label>
+          <input type="password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl bg-tealbrand-950 border border-mint-500/30 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-mint-500" />
+        </div>
+        <button type="submit" id="modal-submit-btn" class="w-full py-3 rounded-xl bg-mint-500 hover:bg-mint-400 text-tealbrand-950 font-bold text-sm shadow-lg shadow-mint-500/20 transition-all">
+          Launch Workspace
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE LOGIC -->
+  <script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // --- Mobile Navigation Toggle ---
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileMenuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // --- Toast Notification Helper (Replaces alert) ---
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      const bgClass = type === 'warning' 
+        ? 'bg-[#28200D] border-amber-500/50 text-amber-100' 
+        : 'bg-tealbrand-950 border-mint-500/45 text-white';
+      const iconName = type === 'warning' ? 'alert-triangle' : 'check-circle-2';
+      const iconColor = type === 'warning' ? 'text-amber-400' : 'text-mint-400';
+
+      toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl border text-sm shadow-2xl transition-all duration-300 ${bgClass}`;
+      toast.innerHTML = `
+        <i data-lucide="${iconName}" class="w-4 h-4 ${iconColor} shrink-0"></i>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      lucide.createIcons();
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(8px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3400);
+    }
+
+    // --- Hero Card Mini Simulator ---
+    let heroSimulated = false;
+    function simulateHeroScope() {
+      const tag = document.getElementById('hero-budget-tag');
+      const btn = document.getElementById('hero-sim-btn');
+      if (!heroSimulated) {
+        tag.textContent = 'Change Order Ready (+$650)';
+        tag.className = 'text-xs font-mono bg-amber-500/15 border border-amber-400/40 px-2 py-0.5 rounded text-amber-300';
+        btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5"></i><span>Change Order Sent to Client!</span>`;
+        btn.className = 'w-full py-2.5 px-3 rounded-lg bg-tealbrand-800 border border-mint-500/40 text-xs font-bold text-mint-300 transition-colors flex items-center justify-center gap-1.5';
+        showToast('Scope Guard converted extra request into a $650 add-on invoice!');
+        heroSimulated = true;
+      } else {
+        tag.textContent = 'Within Scope';
+        tag.className = 'text-xs font-mono bg-mint-500/15 border border-mint-500/30 px-2 py-0.5 rounded text-mint-300';
+        btn.innerHTML = `<i data-lucide="plus-circle" class="w-3.5 h-3.5"></i><span>Simulate Extra Client Request (+$650)</span>`;
+        btn.className = 'w-full py-2.5 px-3 rounded-lg bg-mint-500 hover:bg-mint-400 text-xs font-bold text-tealbrand-950 transition-colors flex items-center justify-center gap-1.5 shadow-md shadow-mint-500/15';
+        heroSimulated = false;
+      }
+      lucide.createIcons();
+    }
+
+    // --- Interactive Workspace Demo Data & State ---
+    const workspaceProjects = [
+      {
+        id: 'novapay',
+        tabLabel: 'NovaPay Redesign',
+        badge: 'Fintech Retainer',
+        dueDate: 'Due Nov 28',
+        title: 'NovaPay Mobile Web Redesign',
+        client: 'NovaPay Technologies',
+        hoursLogged: 27.2,
+        hoursCap: 40.0,
+        invoiceAmount: 4800,
+        invoiceId: '#INV-204',
+        invoiceStatus: 'Deposit Paid',
+        portalSlug: 'portal.syncflow.io/novapay',
+        tasks: [
+          { id: 1, title: 'Design System & Typography Tokens', tag: 'In Scope', completed: true },
+          { id: 2, title: 'Interactive Onboarding Wireframes', tag: 'In Scope', completed: true },
+          { id: 3, title: 'Responsive Pricing & Checkout Flow', tag: 'Client Review', completed: false },
+          { id: 4, title: 'Production Handoff & Storybook Docs', tag: 'In Scope', completed: false }
+        ]
+      },
+      {
+        id: 'kinetix',
+        tabLabel: 'Kinetix SaaS App',
+        badge: 'Fixed Sprint',
+        dueDate: 'Due Dec 04',
+        title: 'Kinetix Analytics Dashboard MVP',
+        client: 'Kinetix Cloud Inc.',
+        hoursLogged: 54.0,
+        hoursCap: 60.0,
+        invoiceAmount: 7200,
+        invoiceId: '#INV-209',
+        invoiceStatus: 'Milestone 2 Due',
+        portalSlug: 'portal.syncflow.io/kinetix',
+        tasks: [
+          { id: 101, title: 'OAuth2 & Workspace Multi-Tenant Setup', tag: 'In Scope', completed: true },
+          { id: 102, title: 'Real-time Revenue Chart Components', tag: 'In Scope', completed: true },
+          { id: 103, title: 'Custom CSV Export & Webhook Logs', tag: 'Add-On (+$450)', completed: true },
+          { id: 104, title: 'End-to-End QA & Vercel Production Deploy', tag: 'In Scope', completed: false }
+        ]
+      },
+      {
+        id: 'verdant',
+        tabLabel: 'Verdant Brand',
+        badge: 'Brand & Webflow',
+        dueDate: 'Due Dec 12',
+        title: 'Verdant Eco-Packaging Launch Site',
+        client: 'Verdant Goods Co.',
+        hoursLogged: 14.5,
+        hoursCap: 30.0,
+        invoiceAmount: 3500,
+        invoiceId: '#INV-212',
+        invoiceStatus: 'Paid in Full',
+        portalSlug: 'portal.syncflow.io/verdant',
+        tasks: [
+          { id: 201, title: 'Visual Identity & Packaging Mockups', tag: 'In Scope', completed: true },
+          { id: 202, title: 'Interactive Carbon Calculator Widget', tag: 'Client Review', completed: false },
+          { id: 203, title: 'CMS Collection Setup & SEO Audit', tag: 'In Scope', completed: false }
+        ]
+      }
+    ];
+
+    let activeProjectId = 'novapay';
+
+    function renderProjectTabs() {
+      const tabContainer = document.getElementById('project-tabs');
+      tabContainer.innerHTML = workspaceProjects.map(proj => {
+        const isActive = proj.id === activeProjectId;
+        return `
+          <button 
+            onclick="selectProject('${proj.id}')"
+            class="px-3.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap tab-transition ${
+              isActive 
+                ? 'bg-mint-500 text-tealbrand-950 shadow-sm' 
+                : 'text-slate-300 hover:text-white hover:bg-tealbrand-800'
+            }">
+            ${proj.tabLabel}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function renderWorkspace() {
+      const project = workspaceProjects.find(p => p.id === activeProjectId);
+      if (!project) return;
+
+      renderProjectTabs();
+
+      // Update Sidebar Metadata
+      document.getElementById('ws-client-badge').textContent = project.badge;
+      document.getElementById('ws-due-date').innerHTML = `<i data-lucide="calendar" class="w-3.5 h-3.5 text-mint-500"></i> ${project.dueDate}`;
+      document.getElementById('ws-project-title').textContent = project.title;
+      document.getElementById('ws-client-name').textContent = `Client: ${project.client}`;
+
+      // Scope Meter Calculations
+      const pct = Math.min(Math.round((project.hoursLogged / project.hoursCap) * 100), 100);
+      const isOverBuffer = project.hoursLogged > project.hoursCap * 0.85;
+      const isExceeded = project.hoursLogged > project.hoursCap;
+
+      const bar = document.getElementById('ws-scope-bar');
+      const pctLabel = document.getElementById('ws-scope-percent');
+      const statusLabel = document.getElementById('ws-scope-status-label');
+
+      bar.style.width = `${pct}%`;
+      pctLabel.textContent = `${Math.round((project.hoursLogged / project.hoursCap) * 100)}% Used`;
+      document.getElementById('ws-hours-text').textContent = `${project.hoursLogged.toFixed(1)} / ${project.hoursCap.toFixed(1)} hrs logged`;
+
+      if (isExceeded) {
+        bar.className = 'h-full bg-rose-400 rounded-full transition-all duration-500';
+        pctLabel.className = 'font-mono text-rose-400 font-bold';
+        statusLabel.className = 'font-semibold text-rose-400';
+        statusLabel.textContent = 'Scope Exceeded (+Add-on)';
+      } else if (isOverBuffer) {
+        bar.className = 'h-full bg-amber-400 rounded-full transition-all duration-500';
+        pctLabel.className = 'font-mono text-amber-300 font-bold';
+        statusLabel.className = 'font-semibold text-amber-300';
+        statusLabel.textContent = 'Nearing Scope Cap';
+      } else {
+        bar.className = 'h-full bg-mint-500 rounded-full transition-all duration-500';
+        pctLabel.className = 'font-mono text-mint-400 font-bold';
+        statusLabel.className = 'font-medium text-mint-400';
+        statusLabel.textContent = 'Healthy Buffer';
+      }
+
+      // Invoice Section
+      document.getElementById('ws-invoice-pill').textContent = project.invoiceStatus;
+      document.getElementById('ws-invoice-amount').textContent = `$${project.invoiceAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+      document.getElementById('ws-invoice-id').textContent = project.invoiceId;
+
+      // Deliverables Checklist
+      const completedCount = project.tasks.filter(t => t.completed).length;
+      document.getElementById('ws-task-counter').textContent = `${completedCount} of ${project.tasks.length} Completed`;
+
+      const checklistEl = document.getElementById('ws-checklist');
+      checklistEl.innerHTML = project.tasks.map(task => {
+        const badgeStyle = task.tag.includes('Add-On')
+          ? 'bg-amber-500/15 text-amber-300 border-amber-400/35'
+          : task.tag === 'Client Review'
+          ? 'bg-mint-500/15 text-mint-300 border-mint-500/35'
+          : 'bg-tealbrand-950/80 text-slate-300 border-mint-500/20';
+
+        return `
+          <div 
+            onclick="toggleTask(${task.id})"
+            class="group flex items-center justify-between gap-3 p-3.5 rounded-xl border transition-all cursor-pointer ${
+              task.completed 
+                ? 'bg-tealbrand-950/45 border-mint-500/15' 
+                : 'bg-tealbrand-950/85 border-mint-500/25 hover:border-mint-500/55 shadow-sm'
+            }">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-5 h-5 rounded-md flex items-center justify-center border transition-colors shrink-0 ${
+                task.completed 
+                  ? 'bg-mint-500 border-mint-500 text-tealbrand-950' 
+                  : 'border-mint-500/40 group-hover:border-mint-400 bg-tealbrand-900'
+              }">
+                ${task.completed ? '<i data-lucide="check" class="w-3.5 h-3.5 stroke-[3]"></i>' : ''}
+              </div>
+              <span class="text-sm font-medium truncate ${task.completed ? 'line-through text-slate-500' : 'text-slate-100'}">
+                ${task.title}
+              </span>
+            </div>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold border shrink-0 ${badgeStyle}">
+              ${task.tag}
+            </span>
+          </div>
+        `;
+      }).join('');
+
+      // Portal Link Footer
+      const footerLink = document.querySelector('#workspace-demo strong.font-mono');
+      if (footerLink) footerLink.textContent = project.portalSlug;
+
+      lucide.createIcons();
+    }
+
+    function selectProject(id) {
+      activeProjectId = id;
+      renderWorkspace();
+    }
+
+    function toggleTask(taskId) {
+      const project = workspaceProjects.find(p => p.id === activeProjectId);
+      const task = project.tasks.find(t => t.id === taskId);
+      if (task) {
+        task.completed = !task.completed;
+        renderWorkspace();
+        if (task.completed) {
+          showToast(`Milestone marked complete: "${task.title}"`);
+        }
+      }
+    }
+
+    function handleAddTask(e) {
+      e.preventDefault();
+      const input = document.getElementById('new-task-input');
+      const tagSelect = document.getElementById('new-task-tag');
+      const title = input.value.trim();
+      if (!title) return;
+
+      const project = workspaceProjects.find(p => p.id === activeProjectId);
+      project.tasks.push({
+        id: Date.now(),
+        title,
+        tag: tagSelect.value,
+        completed: false
+      });
+
+      if (tagSelect.value.includes('Add-On')) {
+        project.invoiceAmount += 350;
+        showToast('Added out-of-scope deliverable (+$350 added to draft invoice)', 'warning');
+      } else {
+        showToast('New milestone added & synced to client portal');
+      }
+
+      input.value = '';
+      renderWorkspace();
+    }
+
+    function addScopeChangeRequest() {
+      const project = workspaceProjects.find(p => p.id === activeProjectId);
+      project.hoursLogged = +(project.hoursLogged + 4.0).toFixed(1);
+      project.invoiceAmount += 480;
+      renderWorkspace();
+      showToast('Logged +4.0 hrs scope change (+$480 added to invoice)', 'warning');
+    }
+
+    function triggerInvoiceAction() {
+      const project = workspaceProjects.find(p => p.id === activeProjectId);
+      project.invoiceStatus = 'Sent via Stripe';
+      renderWorkspace();
+      showToast(`Invoice ${project.invoiceId} ($${project.invoiceAmount.toLocaleString()}) sent to ${project.client}!`);
+    }
+
+    function copyPortalLink() {
+      const project = workspaceProjects.find(p => p.id === activeProjectId);
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(`https://${project.portalSlug}`).catch(() => {});
+      }
+      showToast(`Copied magic client link: https://${project.portalSlug}`);
+    }
+
+    // --- Pricing Monthly / Annual Switcher ---
+    function setBillingCycle(cycle) {
+      const btnMonthly = document.getElementById('btn-monthly');
+      const btnAnnual = document.getElementById('btn-annual');
+      const prices = document.querySelectorAll('.price-value');
+
+      if (cycle === 'annual') {
+        btnAnnual.className = 'px-4 py-2 rounded-lg text-sm font-bold bg-mint-500 text-tealbrand-950 shadow-sm transition-all flex items-center gap-1.5';
+        btnMonthly.className = 'px-4 py-2 rounded-lg text-sm font-semibold text-slate-300 hover:text-white transition-all';
+        prices.forEach(el => {
+          el.textContent = `$${el.dataset.annual}`;
+        });
+      } else {
+        btnMonthly.className = 'px-4 py-2 rounded-lg text-sm font-bold bg-mint-500 text-tealbrand-950 shadow-sm transition-all';
+        btnAnnual.className = 'px-4 py-2 rounded-lg text-sm font-semibold text-slate-300 hover:text-white transition-all flex items-center gap-1.5';
+        prices.forEach(el => {
+          el.textContent = `$${el.dataset.monthly}`;
+        });
+      }
+    }
+
+    // --- Auth Modal Controls ---
+    function openModal(mode) {
+      const modal = document.getElementById('auth-modal');
+      const title = document.getElementById('modal-title');
+      const subtitle = document.getElementById('modal-subtitle');
+      const btn = document.getElementById('modal-submit-btn');
+
+      if (mode === 'signin') {
+        title.textContent = 'Welcome back';
+        subtitle.textContent = 'Sign in to access your client workspaces and invoices.';
+        btn.textContent = 'Sign In to SyncFlow';
+      } else {
+        title.textContent = 'Create your workspace';
+        subtitle.textContent = 'Start your 14-day free Pro trial. No credit card needed.';
+        btn.textContent = 'Launch Free Workspace';
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('auth-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function handleAuthSubmit(e) {
+      e.preventDefault();
+      closeModal();
+      showToast('Workspace ready! Redirecting to your SyncFlow dashboard...');
+    }
+
+    function handleNewsletter(e) {
+      e.preventDefault();
+      const input = document.getElementById('newsletter-email');
+      showToast(`Subscribed ${input.value} to The Independent Dispatch!`);
+      input.value = '';
+    }
+
+    // Initial Render
+    renderWorkspace();
+  </script>
+</body>
+</html>
