@@ -1,22 +1,72 @@
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { Clients, Invoices, Overview, Projects, Proposals, WorkspaceNotFound, WorkspaceShell, } from '@/components/workspace-ui';
-import { Route, Switch, useLocation, Router as WouterRouter, } from 'wouter';
+import {
+  Clients,
+  Invoices,
+  Overview,
+  Projects,
+  Proposals,
+  WorkspaceNotFound,
+  WorkspaceShell,
+} from '@/components/workspace-ui';
+import { Route, Switch, useLocation, Router as WouterRouter } from 'wouter';
+
 const queryClient = new QueryClient();
+
+function MarketingPage() {
+  return (
+    <iframe
+      title="SyncFlow freelancer workspace"
+      src="/syncflow-workflow.html"
+      className="block h-screen w-full border-0"
+    />
+  );
+}
+
+function WorkspaceRoutes() {
+  return (
+    <WorkspaceShell>
+      <Switch>
+        <Route path="/dashboard" component={Overview} />
+        <Route path="/clients" component={Clients} />
+        <Route path="/projects" component={Projects} />
+        <Route path="/proposals" component={Proposals} />
+        <Route path="/invoices" component={Invoices} />
+        <Route component={WorkspaceNotFound} />
+      </Switch>
+    </WorkspaceShell>
+  );
+}
+
 function Router() {
-    return (
-    // Keep a shared shell (sidebar, navbar) outside the boundary so it
-    // survives a page crash.
-    _jsx(RoutedErrorBoundary, { children: _jsx(WorkspaceShell, { children: _jsxs(Switch, { children: [_jsx(Route, { path: "/", component: Overview }), _jsx(Route, { path: "/clients", component: Clients }), _jsx(Route, { path: "/projects", component: Projects }), _jsx(Route, { path: "/proposals", component: Proposals }), _jsx(Route, { path: "/invoices", component: Invoices }), _jsx(Route, { component: WorkspaceNotFound })] }) }) }));
+  return (
+    <RoutedErrorBoundary>
+      <Switch>
+        <Route path="/" component={MarketingPage} />
+        <Route component={WorkspaceRoutes} />
+      </Switch>
+    </RoutedErrorBoundary>
+  );
 }
+
 function RoutedErrorBoundary({ children }) {
-    const [location] = useLocation();
-    return _jsx(ErrorBoundary, { resetKey: location, children: children });
+  const [location] = useLocation();
+  return <ErrorBoundary resetKey={location}>{children}</ErrorBoundary>;
 }
+
 function App() {
-    return (_jsx(QueryClientProvider, { client: queryClient, children: _jsxs(TooltipProvider, { children: [_jsx(WouterRouter, { base: import.meta.env.BASE_URL.replace(/\/$/, ''), children: _jsx(Router, {}) }), _jsx(Toaster, {})] }) }));
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+          <Router />
+        </WouterRouter>
+        <Toaster />
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
 }
+
 export default App;

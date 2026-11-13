@@ -79,7 +79,7 @@ export function WorkspaceShell({ children }) {
     const [location] = useLocation();
     const [mobileOpen, setMobileOpen] = useState(false);
     const nav = [
-        { href: '/', label: 'Overview', icon: Activity },
+        { href: '/dashboard', label: 'Overview', icon: Activity },
         { href: '/clients', label: 'Clients', icon: UsersRound },
         { href: '/projects', label: 'Projects', icon: FolderKanban },
         { href: '/proposals', label: 'Proposals', icon: FileText },
