@@ -1,6 +1,6 @@
 kind = "web"
 previewPath = "/"
-title = "Freelancer Workspace"
+title = "Syncflow"
 description = "A focused workspace for independent consultants to manage clients, projects, AI-assisted proposals, and invoices from one place."
 version = "1.0.0"
 id = "artifacts/freelancer-workspace"
