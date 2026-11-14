@@ -6,7 +6,6 @@ import AuthPage from '@/components/auth-page';
 import {
   Clients,
   Invoices,
-  Overview,
   Projects,
   Proposals,
   WorkspaceNotFound,
@@ -26,11 +25,20 @@ function MarketingPage() {
   );
 }
 
+function DashboardPage() {
+  return (
+    <iframe
+      title="SyncFlow client retainer and scope dashboard"
+      src="/syncflow-client-retainer-dashboard.html"
+      className="fixed inset-0 h-screen w-full border-0"
+    />
+  );
+}
+
 function WorkspaceRoutes() {
   return (
     <WorkspaceShell>
       <Switch>
-        <Route path="/dashboard" component={Overview} />
         <Route path="/clients" component={Clients} />
         <Route path="/projects" component={Projects} />
         <Route path="/proposals" component={Proposals} />
@@ -48,6 +56,7 @@ function Router() {
         <Route path="/" component={MarketingPage} />
         <Route path="/login" component={AuthPage} />
         <Route path="/signup" component={AuthPage} />
+        <Route path="/dashboard" component={DashboardPage} />
         <Route component={WorkspaceRoutes} />
       </Switch>
     </RoutedErrorBoundary>

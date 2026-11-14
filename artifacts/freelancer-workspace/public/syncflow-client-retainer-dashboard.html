@@ -1,0 +1,1779 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SyncFlow — Client Retainer & Scope Guard Dashboard</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans, Inter, and JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            forest: {
+              deep: '#091C1C',
+              canvas: '#0E2828',
+              card: '#143636',
+              elevated: '#1B4444',
+              border: '#214E4E',
+            },
+            mint: {
+              sage: 'var(--accent-mint)',
+              glow: 'var(--accent-glow)',
+              muted: '#4A8266',
+              tint: 'var(--accent-tint)',
+            },
+            cream: {
+              primary: '#F2F7F5',
+              secondary: '#A5C2BA',
+              muted: '#6D8F87',
+            }
+          },
+          fontFamily: {
+            display: ['"Plus Jakarta Sans"', 'sans-serif'],
+            sans: ['"Inter"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          boxShadow: {
+            'emboss': 'inset 0 1px 0 0 rgba(154, 217, 181, 0.14), 0 10px 30px -10px rgba(4, 14, 14, 0.75)',
+            'mint-glow': '0 0 20px rgba(120, 194, 153, 0.22)',
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Custom Scrollbar & Embossed Glass Surfaces */
+    :root {
+      --accent-mint: #78C299;
+      --accent-glow: #9AD9B5;
+      --accent-tint: rgba(120, 194, 153, 0.12);
+    }
+
+    body {
+      background-color: #0E2828;
+      color: #F2F7F5;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .glass-card {
+      background: linear-gradient(165deg, rgba(22, 58, 58, 0.92) 0%, rgba(16, 44, 44, 0.96) 100%);
+      border: 1px solid rgba(154, 217, 181, 0.13);
+      box-shadow: inset 0 1px 0 0 rgba(154, 217, 181, 0.12), 0 12px 28px -12px rgba(3, 12, 12, 0.8);
+      backdrop-filter: blur(12px);
+    }
+
+    .glass-card-hover {
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .glass-card-hover:hover {
+      border-color: rgba(154, 217, 181, 0.32);
+      box-shadow: inset 0 1px 0 0 rgba(154, 217, 181, 0.2), 0 16px 32px -12px rgba(3, 12, 12, 0.9);
+    }
+
+    .nav-item-active {
+      background: linear-gradient(90deg, rgba(120, 194, 153, 0.16) 0%, rgba(120, 194, 153, 0.03) 100%);
+      border-left: 3px solid var(--accent-mint);
+      color: #F2F7F5;
+    }
+
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Custom subtle scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #091C1C;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #214E4E;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #78C299;
+    }
+
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.9; }
+      70% { transform: scale(1.35); opacity: 0; }
+      100% { transform: scale(1.35); opacity: 0; }
+    }
+    .live-dot::after {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 9999px;
+      border: 1.5px solid #78C299;
+      animation: pulse-ring 1.8s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex bg-forest-canvas text-cream-primary selection:bg-mint-sage selection:text-forest-deep">
+
+  <!-- Mobile Sidebar Backdrop -->
+  <div id="sidebarBackdrop" onclick="toggleMobileSidebar(false)" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-30 hidden lg:hidden"></div>
+
+  <!-- ===================================================================== -->
+  <!-- 1. COLLAPSIBLE SIDEBAR NAVIGATION                                     -->
+  <!-- ===================================================================== -->
+  <aside id="sidebar" class="fixed lg:sticky top-0 left-0 z-40 h-screen w-72 bg-forest-deep border-r border-forest-border/70 flex flex-col justify-between transition-transform duration-300 -translate-x-full lg:translate-x-0 shrink-0">
+    <div>
+      <!-- Brand Header with Custom SVG Circular Mint-Sage Ring + Multi-Strand S-Ribbon Logo -->
+      <div class="px-5 py-5 border-b border-forest-border/60 flex items-center justify-between">
+        <a href="#overview" onclick="switchView('overview')" class="flex items-center gap-3.5 group focus:outline-none">
+          <div class="relative w-11 h-11 shrink-0 flex items-center justify-center">
+            <svg viewBox="0 0 64 64" class="w-11 h-11 overflow-visible" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="SyncFlow Logo">
+              <defs>
+                <linearGradient id="syncRingGrad" x1="6" y1="6" x2="58" y2="58" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#9AD9B5" />
+                  <stop offset="55%" stop-color="#78C299" />
+                  <stop offset="100%" stop-color="#3E7C5E" />
+                </linearGradient>
+                <linearGradient id="ribbonStrandA" x1="18" y1="16" x2="46" y2="48" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#B8EBD0" />
+                  <stop offset="100%" stop-color="#78C299" />
+                </linearGradient>
+                <linearGradient id="ribbonStrandB" x1="46" y1="18" x2="18" y2="46" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#78C299" />
+                  <stop offset="100%" stop-color="#4A8B6B" />
+                </linearGradient>
+              </defs>
+              <!-- Outer Ambient Halo -->
+              <circle cx="32" cy="32" r="29" stroke="#78C299" stroke-opacity="0.18" stroke-width="1" />
+              <!-- Primary Circular Mint-Sage Ring -->
+              <circle cx="32" cy="32" r="26" stroke="url(#syncRingGrad)" stroke-width="2.6" />
+              <!-- Inner Recessed Track -->
+              <circle cx="32" cy="32" r="21.5" fill="#0E2828" stroke="#214E4E" stroke-width="0.9" />
+              <!-- Multi-Strand S-Ribbon Flow -->
+              <path d="M40.5 21.5C37.2 18.8 27.5 18.2 24.5 23.2C21.6 28.1 42.4 33.4 39.5 39.8C36.7 45.8 25.8 45.2 22.5 41.8"
+                    stroke="url(#ribbonStrandA)" stroke-width="3.2" stroke-linecap="round" />
+              <path d="M42.2 25.2C38.4 22.6 29.2 22.3 26.8 26.5C24.4 30.8 40.2 35.1 37.4 40.8C35.0 45.6 26.8 46.2 23.6 44.2"
+                    stroke="url(#ribbonStrandB)" stroke-width="2.1" stroke-linecap="round" stroke-opacity="0.9" />
+              <path d="M38.2 19.2C34.2 17.5 25.4 18.4 23.2 22.5C21.2 26.2 37.8 31.2 40.8 36.4"
+                    stroke="#D6F5E5" stroke-width="1.15" stroke-linecap="round" stroke-opacity="0.75" />
+            </svg>
+          </div>
+          <div class="leading-tight">
+            <div class="font-display font-extrabold tracking-wider text-base text-cream-primary group-hover:text-mint-glow transition-colors">
+              SYNCFLOW
+            </div>
+            <div class="font-mono text-[10px] tracking-[0.22em] text-mint-sage uppercase mt-0.5">
+              SINCE 2026
+            </div>
+          </div>
+        </a>
+        <button onclick="toggleMobileSidebar(false)" class="lg:hidden p-2 rounded-lg text-cream-secondary hover:text-cream-primary hover:bg-forest-card">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Studio Workspace Pill -->
+      <div class="px-4 pt-4 pb-2">
+        <div class="px-3.5 py-2.5 rounded-xl bg-forest-canvas/80 border border-forest-border/80 flex items-center justify-between">
+          <div>
+            <p class="text-[11px] uppercase tracking-wider font-mono text-cream-muted">Studio Workspace</p>
+            <p id="studioNameDisplay" class="text-xs font-semibold text-cream-primary mt-0.5">Kestrel Digital Collective</p>
+          </div>
+          <span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold bg-mint-tint text-mint-glow border border-mint-sage/30">
+            PRO
+          </span>
+        </div>
+      </div>
+
+      <!-- Main Navigation Links -->
+      <nav class="px-3 py-3 space-y-1" aria-label="Dashboard Navigation">
+        <button data-nav="overview" onclick="switchView('overview')" class="nav-btn nav-item-active w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium text-cream-secondary hover:text-cream-primary hover:bg-forest-card/50 transition-all">
+          <span class="flex items-center gap-3">
+            <svg class="w-4 h-4 text-mint-sage" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>
+            Overview
+          </span>
+          <span class="text-[11px] font-mono text-cream-muted">⌘1</span>
+        </button>
+
+        <button data-nav="portals" onclick="switchView('portals')" class="nav-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium text-cream-secondary hover:text-cream-primary hover:bg-forest-card/50 transition-all">
+          <span class="flex items-center gap-3">
+            <svg class="w-4 h-4 text-mint-sage" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Client Portals
+          </span>
+          <span id="navClientCount" class="px-2 py-0.5 rounded-full text-[11px] font-mono bg-forest-card text-mint-glow border border-forest-border">3</span>
+        </button>
+
+        <button data-nav="scopeguard" onclick="switchView('scopeguard')" class="nav-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium text-cream-secondary hover:text-cream-primary hover:bg-forest-card/50 transition-all">
+          <span class="flex items-center gap-3">
+            <svg class="w-4 h-4 text-mint-sage" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+            Scope Guard
+          </span>
+          <span id="navCreepBadge" class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-amber-500/15 text-amber-300 border border-amber-400/30">1 Alert</span>
+        </button>
+
+        <button data-nav="invoices" onclick="switchView('invoices')" class="nav-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium text-cream-secondary hover:text-cream-primary hover:bg-forest-card/50 transition-all">
+          <span class="flex items-center gap-3">
+            <svg class="w-4 h-4 text-mint-sage" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            Invoices & Milestones
+          </span>
+          <span id="navPendingInvBadge" class="text-[11px] font-mono text-mint-sage">2</span>
+        </button>
+
+        <button data-nav="timetracker" onclick="switchView('timetracker')" class="nav-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium text-cream-secondary hover:text-cream-primary hover:bg-forest-card/50 transition-all">
+          <span class="flex items-center gap-3">
+            <svg class="w-4 h-4 text-mint-sage" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Time Tracker
+          </span>
+          <span class="text-[11px] font-mono text-cream-muted">Live</span>
+        </button>
+
+        <button data-nav="settings" onclick="switchView('settings')" class="nav-btn w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium text-cream-secondary hover:text-cream-primary hover:bg-forest-card/50 transition-all">
+          <span class="flex items-center gap-3">
+            <svg class="w-4 h-4 text-mint-sage" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Settings
+          </span>
+        </button>
+      </nav>
+      <div class="mx-4 border-t border-forest-border/60 pt-3">
+        <p class="px-2 text-[10px] font-mono uppercase tracking-wider text-cream-muted">SyncFlow workspace</p>
+        <a href="/clients" target="_top" class="mt-2 flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-medium text-cream-secondary hover:bg-forest-card/50 hover:text-cream-primary">
+          Open clients, projects & invoices
+          <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Bottom Sidebar: Quick Retainer Health + User Profile Badge -->
+    <div class="p-4 border-t border-forest-border/60 space-y-3">
+      <div class="p-3 rounded-xl bg-forest-canvas/90 border border-forest-border/70">
+        <div class="flex items-center justify-between text-xs mb-1.5">
+          <span class="text-cream-secondary font-medium">Monthly Retainer Cap</span>
+          <span id="sidebarRetainerPct" class="font-mono font-semibold text-mint-glow">84%</span>
+        </div>
+        <div class="w-full h-1.5 bg-forest-deep rounded-full overflow-hidden">
+          <div id="sidebarRetainerBar" class="h-full bg-gradient-to-r from-mint-sage to-mint-glow rounded-full transition-all duration-500" style="width: 84%"></div>
+        </div>
+        <p class="text-[11px] text-cream-muted mt-1.5 font-mono">Sample workspace • saved in this browser</p>
+      </div>
+
+      <!-- User Profile Badge -->
+      <div class="flex items-center justify-between p-2.5 rounded-xl bg-forest-card/60 border border-forest-border/70 hover:border-mint-sage/40 transition-colors">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-mint-sage to-mint-muted text-forest-deep font-display font-bold text-sm flex items-center justify-center shadow-inner">
+            AM
+          </div>
+          <div class="leading-tight">
+            <p id="profileNameDisplay" class="text-xs font-semibold text-cream-primary">Amara Mensah</p>
+            <p class="text-[11px] text-cream-secondary">Principal Director</p>
+          </div>
+        </div>
+        <button onclick="switchView('settings')" title="Workspace Preferences" class="p-1.5 rounded-lg text-cream-secondary hover:text-mint-glow hover:bg-forest-deep/70 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN CONTENT SHELL                                                    -->
+  <!-- ===================================================================== -->
+  <div class="flex-1 flex flex-col min-w-0">
+
+    <!-- =================================================================== -->
+    <!-- 2. TOP COMMAND BAR                                                  -->
+    <!-- =================================================================== -->
+    <header class="sticky top-0 z-20 bg-forest-deep/95 backdrop-blur-md border-b border-forest-border/70 px-4 sm:px-6 lg:px-8 py-3.5">
+      <div class="max-w-[1440px] mx-auto flex flex-wrap items-center justify-between gap-3">
+
+        <!-- Left: Mobile Hamburger + Global Search -->
+        <div class="flex items-center gap-3 flex-1 min-w-[220px] max-w-md">
+          <button onclick="toggleMobileSidebar(true)" class="lg:hidden p-2.5 rounded-xl bg-forest-card border border-forest-border text-cream-primary hover:border-mint-sage">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+
+          <div class="relative flex-1">
+            <svg class="w-4 h-4 text-cream-muted absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="globalSearchInput" type="text" oninput="handleGlobalSearch(this.value)" placeholder="Search clients, deliverables, invoices..."
+              class="w-full pl-10 pr-4 py-2 rounded-xl bg-forest-canvas border border-forest-border text-xs sm:text-sm text-cream-primary placeholder-cream-muted focus:outline-none focus:border-mint-sage transition-colors" />
+            <!-- Search Dropdown Results -->
+            <div id="globalSearchResults" class="hidden absolute left-0 right-0 mt-2 rounded-xl bg-forest-deep border border-forest-border shadow-2xl overflow-hidden z-50"></div>
+          </div>
+        </div>
+
+        <!-- Right: Live Active Timer Widget + New Client CTA + Notification Bell -->
+        <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap">
+
+          <!-- Live Active Timer Widget -->
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-forest-canvas border border-forest-border">
+            <span id="timerPulseDot" class="relative w-2 h-2 rounded-full bg-mint-sage live-dot"></span>
+            <select id="timerClientSelect" class="bg-transparent text-xs font-medium text-cream-secondary focus:outline-none max-w-[115px] truncate cursor-pointer">
+              <option value="novapay" class="bg-forest-deep">NovaPay Redesign</option>
+              <option value="kinetix" class="bg-forest-deep">Kinetix SaaS App</option>
+              <option value="verdant" class="bg-forest-deep">Verdant Brand</option>
+            </select>
+            <span id="liveTimerClock" class="font-mono text-xs sm:text-sm font-semibold text-mint-glow tabular-nums px-1.5">
+              00:42:18
+            </span>
+            <button id="timerToggleBtn" onclick="toggleLiveTimer()" title="Start / Pause Timer"
+              class="p-1.5 rounded-lg bg-forest-card hover:bg-mint-sage hover:text-forest-deep text-mint-glow transition-colors">
+              <svg id="timerPauseIcon" class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+              <svg id="timerPlayIcon" class="w-3.5 h-3.5 hidden" fill="currentColor" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
+            <button onclick="logActiveTimerToScope()" title="Log Tracked Time Directly Into Client Scope"
+              class="px-2.5 py-1 rounded-lg bg-mint-tint hover:bg-mint-sage text-mint-glow hover:text-forest-deep border border-mint-sage/30 font-mono text-[11px] font-semibold transition-all">
+              + Log
+            </button>
+          </div>
+
+          <!-- Quick '+ New Client / Project' Modal Trigger -->
+          <button onclick="openModal('newClientModal')"
+            class="px-3.5 py-2 rounded-xl bg-mint-sage hover:bg-mint-glow text-forest-deep font-display font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-mint-glow transition-all cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span>New Client / Project</span>
+          </button>
+
+          <!-- Notification Bell -->
+          <div class="relative">
+            <button onclick="toggleNotificationsDropdown()" class="relative p-2.5 rounded-xl bg-forest-canvas border border-forest-border text-cream-secondary hover:text-mint-glow hover:border-mint-sage transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <span id="notifBadgeCount" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-mint-sage text-forest-deep font-mono font-bold text-[10px] flex items-center justify-center">3</span>
+            </button>
+
+            <!-- Notifications Popover -->
+            <div id="notificationsDropdown" class="hidden absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-forest-deep border border-forest-border shadow-2xl z-50 overflow-hidden">
+              <div class="px-4 py-3 border-b border-forest-border flex items-center justify-between">
+                <span class="font-display font-bold text-xs uppercase tracking-wider text-cream-primary">Studio Activity & Guard Alerts</span>
+                <button onclick="markAllNotificationsRead()" class="text-[11px] font-mono text-mint-sage hover:underline">Mark read</button>
+              </div>
+              <div id="notificationsList" class="divide-y divide-forest-border/50 max-h-72 overflow-y-auto"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- =================================================================== -->
+    <!-- MAIN VIEWPORT CONTAINER                                             -->
+    <!-- =================================================================== -->
+    <main class="flex-1 px-4 sm:px-6 lg:px-8 py-6 max-w-[1440px] w-full mx-auto space-y-6">
+
+      <!-- Page Header Banner -->
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+        <div>
+          <div class="flex items-center gap-2 text-xs font-mono text-mint-sage uppercase tracking-wider">
+            <span>Studio Retainer Workspace</span>
+            <span>•</span>
+            <span id="currentBreadcrumb">Overview</span>
+          </div>
+          <h1 id="pageTitle" class="font-display font-extrabold text-2xl sm:text-3xl text-cream-primary tracking-tight mt-1">
+            Retainer Command & Scope Guard
+          </h1>
+        </div>
+        <div class="flex items-center gap-2 text-xs font-mono text-cream-secondary bg-forest-deep/80 px-3.5 py-2 rounded-xl border border-forest-border">
+          <span class="w-2 h-2 rounded-full bg-mint-sage"></span>
+          <span>Sample dashboard · saved in this browser only</span>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- 3. OVERVIEW KPI CARDS (Visible on Overview & Scope Guard)         -->
+      <!-- ================================================================= -->
+      <section id="kpiSection" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <!-- KPI 1: Active Retainer Revenue -->
+        <div class="glass-card glass-card-hover rounded-2xl p-5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-cream-secondary">Active Retainer Revenue</span>
+            <span class="p-2 rounded-xl bg-mint-tint text-mint-sage">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </span>
+          </div>
+          <div id="kpiRetainerRev" class="font-mono font-bold text-2xl sm:text-3xl text-cream-primary tabular-nums mt-3">
+            $28,500
+          </div>
+          <div class="flex items-center justify-between mt-3 pt-3 border-t border-forest-border/50 text-xs">
+            <span class="text-mint-glow font-mono">+18.4% MoM</span>
+            <span id="kpiActiveClientsLabel" class="text-cream-muted">3 Active Retainers</span>
+          </div>
+        </div>
+
+        <!-- KPI 2: Protected Scope Value Saved -->
+        <div class="glass-card glass-card-hover rounded-2xl p-5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-cream-secondary">Protected Scope Value Saved</span>
+            <span class="p-2 rounded-xl bg-mint-tint text-mint-sage">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </span>
+          </div>
+          <div id="kpiScopeSaved" class="font-mono font-bold text-2xl sm:text-3xl text-mint-glow tabular-nums mt-3">
+            $6,450
+          </div>
+          <div class="flex items-center justify-between mt-3 pt-3 border-t border-forest-border/50 text-xs">
+            <span id="kpiAddonsCount" class="text-mint-sage font-mono">4 Paid Add-ons</span>
+            <span class="text-cream-muted">Zero unbilled creep</span>
+          </div>
+        </div>
+
+        <!-- KPI 3: Unbilled Hours -->
+        <div class="glass-card glass-card-hover rounded-2xl p-5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-cream-secondary">Unbilled / Tracked Hours</span>
+            <span class="p-2 rounded-xl bg-mint-tint text-mint-sage">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </span>
+          </div>
+          <div id="kpiUnbilledHours" class="font-mono font-bold text-2xl sm:text-3xl text-cream-primary tabular-nums mt-3">
+            14.5 hrs
+          </div>
+          <div class="flex items-center justify-between mt-3 pt-3 border-t border-forest-border/50 text-xs">
+            <span id="kpiUnbilledValue" class="text-cream-secondary font-mono">$2,392.50 est.</span>
+            <button onclick="switchView('timetracker')" class="text-mint-sage hover:underline font-medium">Review log →</button>
+          </div>
+        </div>
+
+        <!-- KPI 4: Pending Milestones -->
+        <div class="glass-card glass-card-hover rounded-2xl p-5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-cream-secondary">Pending & Escrowed Milestones</span>
+            <span class="p-2 rounded-xl bg-mint-tint text-mint-sage">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </span>
+          </div>
+          <div id="kpiPendingMilestones" class="font-mono font-bold text-2xl sm:text-3xl text-cream-primary tabular-nums mt-3">
+            $11,200
+          </div>
+          <div class="flex items-center justify-between mt-3 pt-3 border-t border-forest-border/50 text-xs">
+            <span id="kpiEscrowBreakdown" class="text-amber-300 font-mono">2 Escrowed • 1 Due</span>
+            <button onclick="switchView('invoices')" class="text-mint-sage hover:underline font-medium">Ledger →</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- 4. MULTI-CLIENT WORKSPACE & SCOPE GUARD MANAGER                   -->
+      <!-- ================================================================= -->
+      <section id="scopeGuardSection" class="space-y-4">
+        <div class="glass-card rounded-2xl p-5 sm:p-6">
+          <!-- Client Switcher Header -->
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-forest-border/70">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-md bg-mint-tint text-mint-glow font-mono text-[11px] font-semibold border border-mint-sage/30">
+                  SCOPE GUARD ENGINE
+                </span>
+                <span id="activeClientRetainerTag" class="font-mono text-xs text-cream-secondary">
+                  Monthly Retainer: $12,000 / 80 hrs
+                </span>
+              </div>
+              <h2 class="font-display font-bold text-xl text-cream-primary mt-1.5">
+                Multi-Client Workspace & Deliverable Boundary
+              </h2>
+            </div>
+
+            <!-- Client Switcher Pills -->
+            <div id="clientSwitcherTabs" class="flex flex-wrap items-center gap-2">
+              <!-- Populated dynamically by JS -->
+            </div>
+          </div>
+
+          <!-- Scope Creep Alert Banner (Dynamic) -->
+          <div id="scopeCreepBanner" class="mt-5 p-4 rounded-xl bg-amber-500/10 border border-amber-400/35 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-start gap-3">
+              <div class="p-2 rounded-lg bg-amber-500/20 text-amber-300 shrink-0 mt-0.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </div>
+              <div>
+                <p id="scopeCreepTitle" class="text-sm font-semibold text-amber-200">
+                  Scope Creep Guard Triggered — Retainer Utilization at 91%
+                </p>
+                <p id="scopeCreepSubtitle" class="text-xs text-cream-secondary mt-0.5">
+                  Any additional requests beyond remaining 7.0 hrs are automatically flagged as Paid Change Orders ($165/hr).
+                </p>
+              </div>
+            </div>
+            <button onclick="openAddTaskModal('addon')" class="px-3.5 py-2 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 border border-amber-400/40 font-mono text-xs font-semibold shrink-0 transition-colors">
+              + Create Change Order
+            </button>
+          </div>
+
+          <!-- Retainer Utilization Bar + Portal Share Controls -->
+          <div class="mt-5 grid grid-cols-1 lg:grid-cols-12 gap-5 items-center bg-forest-canvas/75 p-4 rounded-xl border border-forest-border/70">
+            <div class="lg:col-span-7 space-y-2">
+              <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+                <span class="font-medium text-cream-primary">
+                  Retainer Hours Consumed: <strong id="utilHoursText" class="font-mono text-mint-glow">73.0 / 80.0 hrs</strong>
+                </span>
+                <span id="utilPercentageBadge" class="font-mono font-bold text-mint-glow">91.3% Utilized</span>
+              </div>
+              <div class="w-full h-3 bg-forest-deep rounded-full overflow-hidden p-0.5 border border-forest-border">
+                <div id="utilProgressBar" class="h-full rounded-full bg-gradient-to-r from-mint-sage to-amber-300 transition-all duration-500" style="width: 91.3%"></div>
+              </div>
+              <div class="flex items-center justify-between text-[11px] font-mono text-cream-muted">
+                <span id="utilInScopeValue">Base Scope: $12,000</span>
+                <span id="utilAddonValue" class="text-mint-sage">Protected Add-Ons: +$2,475</span>
+              </div>
+            </div>
+
+            <!-- Live Client Approval Portal Link Actions -->
+            <div class="lg:col-span-5 flex flex-col sm:flex-row lg:justify-end gap-2.5">
+              <button onclick="copyPortalLink()" class="px-3.5 py-2.5 rounded-xl bg-forest-card hover:bg-forest-elevated border border-forest-border hover:border-mint-sage/50 text-xs font-medium text-cream-primary flex items-center justify-center gap-2 transition-all">
+                <svg class="w-4 h-4 text-mint-sage" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <span>Copy Client Summary</span>
+              </button>
+              <button onclick="openPortalPreview()" class="px-3.5 py-2.5 rounded-xl bg-mint-tint hover:bg-mint-sage text-mint-glow hover:text-forest-deep border border-mint-sage/40 text-xs font-semibold flex items-center justify-center gap-2 transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <span>Preview Client Portal</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Deliverables & Scope Guard List Header -->
+          <div class="mt-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 class="font-display font-bold text-base text-cream-primary">Scoped Deliverables & Change Orders</h3>
+              <p class="text-xs text-cream-secondary">Toggle deliverable sign-off or add new In-Scope / Paid Add-on items.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="openAddTaskModal('in-scope')" class="px-3 py-2 rounded-xl bg-forest-card hover:bg-forest-elevated border border-forest-border text-xs font-medium text-cream-primary flex items-center gap-1.5 transition-colors">
+                <span>+ In-Scope Task</span>
+              </button>
+              <button onclick="openAddTaskModal('addon')" class="px-3 py-2 rounded-xl bg-mint-sage hover:bg-mint-glow text-forest-deep font-semibold text-xs flex items-center gap-1.5 transition-colors">
+                <span>+ Paid Add-On</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Deliverables Table / Cards -->
+          <div id="deliverablesList" class="mt-4 space-y-2.5">
+            <!-- Rendered dynamically via JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- 5. INVOICES & MILESTONES LEDGER                                   -->
+      <!-- ================================================================= -->
+      <section id="invoicesSection" class="glass-card rounded-2xl p-5 sm:p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-forest-border/70">
+          <div>
+            <span class="font-mono text-[11px] uppercase tracking-wider text-mint-sage">Invoice Ledger</span>
+            <h2 class="font-display font-bold text-xl text-cream-primary mt-0.5">Invoices & Milestone Ledger</h2>
+          </div>
+          <div class="flex flex-wrap items-center gap-2.5">
+            <select id="invoiceFilterSelect" onchange="renderInvoices()" class="px-3 py-2 rounded-xl bg-forest-canvas border border-forest-border text-xs text-cream-secondary focus:outline-none focus:border-mint-sage">
+              <option value="ALL">All Statuses</option>
+              <option value="Paid">Paid</option>
+              <option value="Escrowed">Escrowed</option>
+              <option value="Pending">Pending</option>
+            </select>
+            <button onclick="openModal('createInvoiceModal')" class="px-4 py-2 rounded-xl bg-mint-sage hover:bg-mint-glow text-forest-deep font-display font-bold text-xs flex items-center gap-1.5 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <span>Create Invoice</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-forest-border/70 text-[11px] font-mono uppercase tracking-wider text-cream-muted">
+                <th class="py-3 px-3">Invoice ID</th>
+                <th class="py-3 px-3">Client & Milestone</th>
+                <th class="py-3 px-3">Amount</th>
+                <th class="py-3 px-3">Due Date</th>
+                <th class="py-3 px-3">Status</th>
+                <th class="py-3 px-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="invoicesTableBody" class="divide-y divide-forest-border/40 text-sm">
+              <!-- Populated dynamically via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- 6. INTERACTIVE TIME TRACKER LOG TABLE                             -->
+      <!-- ================================================================= -->
+      <section id="timeTrackerSection" class="glass-card rounded-2xl p-5 sm:p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-forest-border/70">
+          <div>
+            <span class="font-mono text-[11px] uppercase tracking-wider text-mint-sage">Automated Retainer Sync</span>
+            <h2 class="font-display font-bold text-xl text-cream-primary mt-0.5">Time Tracker & Scope Hour Ledger</h2>
+          </div>
+
+          <!-- Quick Manual Time Entry Form -->
+          <form onsubmit="handleQuickTimeEntry(event)" class="flex flex-wrap items-center gap-2">
+            <select id="quickTimeClient" class="px-3 py-2 rounded-xl bg-forest-canvas border border-forest-border text-xs text-cream-primary focus:outline-none focus:border-mint-sage">
+              <option value="novapay">NovaPay Redesign</option>
+              <option value="kinetix">Kinetix SaaS App</option>
+              <option value="verdant">Verdant Brand</option>
+            </select>
+            <input id="quickTimeNote" type="text" required placeholder="Task note (e.g., Checkout flow QA)"
+              class="px-3 py-2 rounded-xl bg-forest-canvas border border-forest-border text-xs text-cream-primary placeholder-cream-muted focus:outline-none focus:border-mint-sage w-48 sm:w-56" />
+            <input id="quickTimeHours" type="number" step="0.25" min="0.25" max="24" value="1.5" required
+              class="px-3 py-2 rounded-xl bg-forest-canvas border border-forest-border font-mono text-xs text-cream-primary w-20 focus:outline-none focus:border-mint-sage" />
+            <button type="submit" class="px-3.5 py-2 rounded-xl bg-mint-tint hover:bg-mint-sage text-mint-glow hover:text-forest-deep border border-mint-sage/40 font-mono text-xs font-semibold transition-all">
+              + Sync Hours
+            </button>
+          </form>
+        </div>
+
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-forest-border/70 text-[11px] font-mono uppercase tracking-wider text-cream-muted">
+                <th class="py-3 px-3">Date</th>
+                <th class="py-3 px-3">Client Workspace</th>
+                <th class="py-3 px-3">Work Description</th>
+                <th class="py-3 px-3">Duration</th>
+                <th class="py-3 px-3">Scope Impact</th>
+                <th class="py-3 px-3 text-right">Billing Status</th>
+              </tr>
+            </thead>
+            <tbody id="timeEntriesTableBody" class="divide-y divide-forest-border/40 text-sm">
+              <!-- Populated dynamically via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================================================================= -->
+      <!-- 7. WORKSPACE SETTINGS VIEW                                        -->
+      <!-- ================================================================= -->
+      <section id="settingsSection" class="hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Left: Studio Branding & Default Rates -->
+          <div class="lg:col-span-7 glass-card rounded-2xl p-6 space-y-5">
+            <div class="border-b border-forest-border/70 pb-4">
+              <span class="font-mono text-[11px] uppercase tracking-wider text-mint-sage">White-Label Client Portals</span>
+              <h2 class="font-display font-bold text-xl text-cream-primary mt-0.5">Studio Identity & Rate Defaults</h2>
+            </div>
+
+            <form onsubmit="saveWorkspaceSettings(event)" class="space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-cream-secondary mb-1.5">Studio / Agency Name</label>
+                  <input id="settingStudioName" type="text" value="Kestrel Digital Collective"
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-forest-canvas border border-forest-border text-sm text-cream-primary focus:outline-none focus:border-mint-sage" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-cream-secondary mb-1.5">Lead Director Name</label>
+                  <input id="settingDirectorName" type="text" value="Amara Mensah"
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-forest-canvas border border-forest-border text-sm text-cream-primary focus:outline-none focus:border-mint-sage" />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium text-cream-secondary mb-1.5">Default Hourly Overage Rate ($/hr)</label>
+                  <input id="settingHourlyRate" type="number" value="165" min="25" max="1000"
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-forest-canvas border border-forest-border font-mono text-sm text-cream-primary focus:outline-none focus:border-mint-sage" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-cream-secondary mb-1.5">Scope Creep Auto-Alert Threshold (%)</label>
+                  <input id="settingCreepThreshold" type="number" value="85" min="50" max="100"
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-forest-canvas border border-forest-border font-mono text-sm text-cream-primary focus:outline-none focus:border-mint-sage" />
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-cream-secondary mb-2">Portal Accent Theme Swatch</label>
+                <div class="flex flex-wrap items-center gap-3">
+                  <button type="button" onclick="applyAccentTheme('#78C299', '#9AD9B5')" class="px-3.5 py-2 rounded-xl bg-forest-canvas border border-mint-sage text-xs font-mono text-cream-primary flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded-full bg-[#78C299]"></span> Mint Sage (Default)
+                  </button>
+                  <button type="button" onclick="applyAccentTheme('#6EE7B7', '#A7F3D0')" class="px-3.5 py-2 rounded-xl bg-forest-canvas border border-forest-border hover:border-emerald-300 text-xs font-mono text-cream-primary flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded-full bg-[#6EE7B7]"></span> Emerald Glow
+                  </button>
+                  <button type="button" onclick="applyAccentTheme('#5EEAD4', '#99F6E4')" class="px-3.5 py-2 rounded-xl bg-forest-canvas border border-forest-border hover:border-teal-300 text-xs font-mono text-cream-primary flex items-center gap-2">
+                    <span class="w-3.5 h-3.5 rounded-full bg-[#5EEAD4]"></span> Glacial Teal
+                  </button>
+                </div>
+              </div>
+
+              <div class="pt-2 flex justify-end">
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-mint-sage hover:bg-mint-glow text-forest-deep font-display font-bold text-xs transition-colors">
+                  Save Studio Configuration
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Right: Stripe & Google OAuth Connection Status -->
+          <div class="lg:col-span-5 glass-card rounded-2xl p-6 space-y-5">
+            <div class="border-b border-forest-border/70 pb-4">
+              <span class="font-mono text-[11px] uppercase tracking-wider text-mint-sage">Verified Integrations</span>
+              <h2 class="font-display font-bold text-xl text-cream-primary mt-0.5">Payment & Auth Bridges</h2>
+            </div>
+
+            <!-- Stripe Connect Card -->
+            <div class="p-4 rounded-xl bg-forest-canvas/85 border border-forest-border flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-[#635BFF]/20 border border-[#635BFF]/40 flex items-center justify-center font-display font-extrabold text-[#A5A0FF]">
+                  S
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-cream-primary">Payment processing</p>
+              <p id="stripeStatusSub" class="text-xs font-mono text-cream-secondary">Payments are not connected</p>
+                </div>
+              </div>
+              <button id="stripeToggleBtn" onclick="openWorkspaceRoute('/invoices')" class="px-3 py-1.5 rounded-lg bg-forest-card text-cream-primary border border-forest-border font-mono text-xs font-semibold">
+                Open invoices
+              </button>
+            </div>
+
+            <!-- Google OAuth Card -->
+            <div class="p-4 rounded-xl bg-forest-canvas/85 border border-forest-border flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-mint-tint border border-mint-sage/30 flex items-center justify-center font-display font-extrabold text-mint-glow">
+                  G
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-cream-primary">Google sign-in</p>
+                  <p id="googleStatusSub" class="text-xs font-mono text-cream-secondary">Account access managed by SyncFlow</p>
+                </div>
+              </div>
+              <button id="googleToggleBtn" onclick="openWorkspaceRoute('/login')" class="px-3 py-1.5 rounded-lg bg-forest-card text-cream-primary border border-forest-border font-mono text-xs font-semibold">
+                Sign-in page
+              </button>
+            </div>
+
+            <div class="p-4 rounded-xl bg-forest-deep/70 border border-forest-border/60 text-xs text-cream-secondary leading-relaxed">
+              <strong class="text-cream-primary">Local preview:</strong> This page stores sample workspace data in this browser. Payments, public client portals, and legal audit records are not connected here.
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODALS (New Client, Add Deliverable/Change Order, Create Invoice,     -->
+  <!-- and Live Client Approval Portal Preview)                              -->
+  <!-- ===================================================================== -->
+
+  <!-- Modal 1: New Client / Project -->
+  <div id="newClientModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-xs p-4">
+    <div class="glass-card rounded-2xl max-w-md w-full p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-forest-border pb-3">
+        <h3 class="font-display font-bold text-lg text-cream-primary">Onboard Client Retainer</h3>
+        <button onclick="closeModal('newClientModal')" class="text-cream-secondary hover:text-cream-primary">✕</button>
+      </div>
+      <form onsubmit="handleCreateClient(event)" class="space-y-3.5">
+        <div>
+          <label class="block text-xs text-cream-secondary mb-1">Client / Project Name</label>
+          <input id="newClientName" type="text" required placeholder="e.g., Helio Cloud Platform"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-forest-canvas border border-forest-border text-sm text-cream-primary focus:outline-none focus:border-mint-sage" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-cream-secondary mb-1">Monthly Retainer ($)</label>
+            <input id="newClientRetainer" type="number" required value="9500" min="500"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-forest-canvas border border-forest-border font-mono text-sm text-cream-primary focus:outline-none focus:border-mint-sage" />
+          </div>
+          <div>
+            <label class="block text-xs text-cream-secondary mb-1">Included Hours / Mo</label>
+            <input id="newClientHours" type="number" required value="60" min="5"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-forest-canvas border border-forest-border font-mono text-sm text-cream-primary focus:outline-none focus:border-mint-sage" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-cream-secondary mb-1">Client Stakeholder Email</label>
+          <input id="newClientEmail" type="email" required placeholder="product@heliocloud.io"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-forest-canvas border border-forest-border text-sm text-cream-primary focus:outline-none focus:border-mint-sage" />
+        </div>
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('newClientModal')" class="px-4 py-2 rounded-xl bg-forest-card text-xs text-cream-secondary">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-mint-sage text-forest-deep font-display font-bold text-xs">Create client</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Add Deliverable / Paid Add-On -->
+  <div id="addTaskModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-xs p-4">
+    <div class="glass-card rounded-2xl max-w-md w-full p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-forest-border pb-3">
+        <h3 id="addTaskModalTitle" class="font-display font-bold text-lg text-cream-primary">Add Deliverable</h3>
+        <button onclick="closeModal('addTaskModal')" class="text-cream-secondary hover:text-cream-primary">✕</button>
+      </div>
+      <form onsubmit="handleAddTaskSubmit(event)" class="space-y-3.5">
+        <div>
+          <label class="block text-xs text-cream-secondary mb-1">Scope Classification</label>
+          <select id="taskTypeSelect" onchange="toggleTaskFeeField()" class="w-full px-3.5 py-2.5 rounded-xl bg-forest-canvas border border-forest-border text-sm text-cream-primary focus:outline-none focus:border-mint-sage">
+            <option value="in-scope">In-Scope (Covered by Base Retainer)</option>
+            <option value="addon">Paid Add-On / Change Order (Protected Revenue)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-cream-secondary mb-1">Deliverable Title</label>
+          <input id="taskTitleInput" type="text" required placeholder="e.g., Multi-currency checkout flow"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-forest-canvas border border-forest-border text-sm text-cream-primary focus:outline-none focus:border-mint-sage" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-cream-secondary mb-1">Estimated Hours</label>
+            <input id="taskHoursInput" type="number" step="0.5" min="0.5" value="6" required
+              class="w-full px-3.5 py-2.5 rounded-xl bg-forest-canvas border border-forest-border font-mono text-sm text-cream-primary focus:outline-none focus:border-mint-sage" />
+          </div>
+          <div id="taskFeeWrapper">
+            <label class="block text-xs text-cream-secondary mb-1">Add-On Fee ($)</label>
+            <input id="taskFeeInput" type="number" min="0" value="990"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-forest-canvas border border-forest-border font-mono text-sm text-mint-glow focus:outline-none focus:border-mint-sage" />
+          </div>
+        </div>
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('addTaskModal')" class="px-4 py-2 rounded-xl bg-forest-card text-xs text-cream-secondary">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-mint-sage text-forest-deep font-display font-bold text-xs">Save to Scope</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 3: Create Invoice -->
+  <div id="createInvoiceModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-xs p-4">
+    <div class="glass-card rounded-2xl max-w-md w-full p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-forest-border pb-3">
+        <h3 class="font-display font-bold text-lg text-cream-primary">Issue Milestone Invoice</h3>
+        <button onclick="closeModal('createInvoiceModal')" class="text-cream-secondary hover:text-cream-primary">✕</button>
+      </div>
+      <form onsubmit="handleCreateInvoice(event)" class="space-y-3.5">
+        <div>
+          <label class="block text-xs text-cream-secondary mb-1">Client Workspace</label>
+          <select id="invClientSelect" class="w-full px-3.5 py-2.5 rounded-xl bg-forest-canvas border border-forest-border text-sm text-cream-primary focus:outline-none focus:border-mint-sage">
+            <option value="NovaPay Redesign">NovaPay Redesign</option>
+            <option value="Kinetix SaaS App">Kinetix SaaS App</option>
+            <option value="Verdant Brand">Verdant Brand</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-cream-secondary mb-1">Milestone Description</label>
+          <input id="invMilestoneInput" type="text" required placeholder="e.g., Phase 3 Design System & Handoff"
+            class="w-full px-3.5 py-2.5 rounded-xl bg-forest-canvas border border-forest-border text-sm text-cream-primary focus:outline-none focus:border-mint-sage" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-cream-secondary mb-1">Amount ($)</label>
+            <input id="invAmountInput" type="number" required value="4200" min="100"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-forest-canvas border border-forest-border font-mono text-sm text-cream-primary focus:outline-none focus:border-mint-sage" />
+          </div>
+          <div>
+            <label class="block text-xs text-cream-secondary mb-1">Initial Status</label>
+            <select id="invStatusInput" class="w-full px-3.5 py-2.5 rounded-xl bg-forest-canvas border border-forest-border text-sm text-cream-primary focus:outline-none focus:border-mint-sage">
+              <option value="Pending">Pending Payment</option>
+            </select>
+          </div>
+        </div>
+        <div class="pt-2 flex justify-end gap-2">
+          <button type="button" onclick="closeModal('createInvoiceModal')" class="px-4 py-2 rounded-xl bg-forest-card text-xs text-cream-secondary">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-mint-sage text-forest-deep font-display font-bold text-xs">Create invoice</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 4: Live Client Approval Portal Preview -->
+  <div id="portalPreviewModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+    <div class="glass-card rounded-2xl max-w-2xl w-full p-6 space-y-5 border-mint-sage/40">
+      <div class="flex items-center justify-between border-b border-forest-border pb-4">
+        <div class="flex items-center gap-2.5">
+          <span class="px-2.5 py-1 rounded-md bg-mint-sage text-forest-deep font-mono font-bold text-[11px]">CLIENT VIEW</span>
+          <h3 id="portalPreviewTitle" class="font-display font-bold text-lg text-cream-primary">NovaPay Redesign — Client Portal Preview</h3>
+        </div>
+        <button onclick="closeModal('portalPreviewModal')" class="p-1.5 rounded-lg text-cream-secondary hover:text-cream-primary hover:bg-forest-card">✕</button>
+      </div>
+      <div id="portalPreviewBody" class="space-y-4">
+        <!-- Populated dynamically -->
+      </div>
+      <div class="pt-3 border-t border-forest-border flex items-center justify-between">
+        <span id="portalShareUrlText" class="font-mono text-xs text-mint-sage truncate max-w-xs sm:max-w-md">Preview only; no public portal is created</span>
+        <button onclick="copyPortalLink()" class="px-4 py-2 rounded-xl bg-mint-sage text-forest-deep font-display font-bold text-xs">
+          Copy Client Summary
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Stack -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 pointer-events-none"></div>
+
+  <!-- ===================================================================== -->
+  <!-- INTERACTIVE VANILLA JAVASCRIPT ENGINE                                 -->
+  <!-- ===================================================================== -->
+  <script>
+    // =========================================================================
+    // 1. STATE STORE (Clients, Deliverables, Invoices, Time Logs, Notifications)
+    // =========================================================================
+    const state = {
+      activeView: 'overview',
+      activeClientId: 'novapay',
+      studioName: 'Kestrel Digital Collective',
+      directorName: 'Amara Mensah',
+      hourlyRate: 165,
+      creepThreshold: 85,
+      accentPrimary: '#78C299',
+      accentGlow: '#9AD9B5',
+      timerRunning: true,
+      timerSeconds: 2538, // 00:42:18
+      clients: [
+        {
+          id: 'novapay',
+          name: 'NovaPay Redesign',
+          stakeholder: 'Elena Rostova • VP Product',
+          email: 'elena@novapay.io',
+          retainerAmount: 12000,
+          retainerHours: 80,
+          consumedHours: 73.0,
+          slug: 'novapay-redesign',
+          deliverables: [
+            { id: 'd1', title: 'Design System & Token Architecture (Figma + React)', hours: 28, type: 'in-scope', fee: 0, approved: true },
+            { id: 'd2', title: 'Merchant Payouts & Treasury Analytics Views', hours: 26, type: 'in-scope', fee: 0, approved: true },
+            { id: 'd3', title: 'Interactive KYC Onboarding Flow', hours: 19, type: 'in-scope', fee: 0, approved: false },
+            { id: 'd4', title: 'Multi-Currency FX Rate Widget (Change Order #01)', hours: 15, type: 'addon', fee: 2475, approved: true }
+          ]
+        },
+        {
+          id: 'kinetix',
+          name: 'Kinetix SaaS App',
+          stakeholder: 'Marcus Vance • CTO',
+          email: 'marcus@kinetix.dev',
+          retainerAmount: 10500,
+          retainerHours: 70,
+          consumedHours: 46.5,
+          slug: 'kinetix-saas-app',
+          deliverables: [
+            { id: 'd5', title: 'Telemetry Pipeline Dashboard & Alert Rules', hours: 24, type: 'in-scope', fee: 0, approved: true },
+            { id: 'd6', title: 'Role-Based Access Control (RBAC) Matrix UI', hours: 22.5, type: 'in-scope', fee: 0, approved: false },
+            { id: 'd7', title: 'Custom SAML SSO Setup Wizard (Change Order #02)', hours: 12, type: 'addon', fee: 1980, approved: true }
+          ]
+        },
+        {
+          id: 'verdant',
+          name: 'Verdant Brand',
+          stakeholder: 'Clara Lindqvist • Founder',
+          email: 'clara@verdantbio.com',
+          retainerAmount: 6000,
+          retainerHours: 40,
+          consumedHours: 31.0,
+          slug: 'verdant-brand',
+          deliverables: [
+            { id: 'd8', title: 'Visual Identity, Packaging & Carbon Ledger Badges', hours: 21, type: 'in-scope', fee: 0, approved: true },
+            { id: 'd9', title: 'Investor Deck & Interactive WebGL Hero', hours: 10, type: 'in-scope', fee: 0, approved: false },
+            { id: 'd10', title: 'Retail Lookbook Print Extension (Change Order #01)', hours: 12, type: 'addon', fee: 1995, approved: true }
+          ]
+        }
+      ],
+      invoices: [
+        { id: 'INV-2026-089', client: 'NovaPay Redesign', milestone: 'Milestone 2: Merchant Treasury + FX Add-On', amount: 6475, due: 'Nov 18, 2026', status: 'Escrowed' },
+        { id: 'INV-2026-088', client: 'Kinetix SaaS App', milestone: 'Sprint 4 Retainer & SAML SSO Add-On', amount: 4725, due: 'Nov 21, 2026', status: 'Pending' },
+        { id: 'INV-2026-087', client: 'Verdant Brand', milestone: 'Brand Identity & Lookbook Final Sign-off', amount: 7995, due: 'Nov 09, 2026', status: 'Paid' },
+        { id: 'INV-2026-086', client: 'NovaPay Redesign', milestone: 'Milestone 1: Core Design Tokens', amount: 8000, due: 'Nov 01, 2026', status: 'Paid' }
+      ],
+      timeLogs: [
+        { id: 't1', date: 'Today, 09:40', clientId: 'novapay', clientName: 'NovaPay Redesign', note: 'KYC document upload states & edge-case validation', hours: 3.5, rate: 165, synced: true },
+        { id: 't2', date: 'Yesterday', clientId: 'kinetix', clientName: 'Kinetix SaaS App', note: 'RBAC permission matrix table & audit log drawer', hours: 4.5, rate: 165, synced: true },
+        { id: 't3', date: 'Nov 12, 2026', clientId: 'verdant', clientName: 'Verdant Brand', note: 'Interactive sustainability metrics section polish', hours: 4.0, rate: 165, synced: true },
+        { id: 't4', date: 'Nov 11, 2026', clientId: 'novapay', clientName: 'NovaPay Redesign', note: 'FX rate sparkline micro-interactions (Change Order #01)', hours: 2.5, rate: 165, synced: true }
+      ],
+      notifications: [
+        { id: 'n1', title: 'Scope Creep Guard Alert', desc: 'NovaPay Redesign reached 91% of base retainer hours.', time: '12m ago', unread: true },
+        { id: 'n2', title: 'Client Deliverable Approved', desc: 'Elena Rostova signed off on FX Rate Widget ($2,475).', time: '2h ago', unread: true },
+        { id: 'n3', title: 'Stripe Milestone Escrowed', desc: '$6,475 locked in escrow for INV-2026-089.', time: '1d ago', unread: true }
+      ]
+    };
+
+    const stateStorageKey = 'syncflow.retainer-dashboard.v1';
+
+    function persistState() {
+      try {
+        localStorage.setItem(stateStorageKey, JSON.stringify(state));
+      } catch (error) {
+        console.warn('Unable to save dashboard data in this browser.', error);
+      }
+    }
+
+    function restoreState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(stateStorageKey) || 'null');
+        if (!saved || !Array.isArray(saved.clients) || !Array.isArray(saved.invoices) || !Array.isArray(saved.timeLogs)) return;
+        Object.assign(state, saved);
+        if (!state.clients.some(client => client.id === state.activeClientId)) {
+          state.activeClientId = state.clients[0]?.id || '';
+        }
+      } catch (error) {
+        console.warn('Saved dashboard data could not be loaded.', error);
+      }
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? '').replace(/[&<>"']/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      })[character]);
+    }
+
+    function openWorkspaceRoute(path) {
+      window.top.location.assign(path);
+    }
+
+    function syncWorkspaceControls() {
+      document.getElementById('studioNameDisplay').textContent = state.studioName;
+      document.getElementById('profileNameDisplay').textContent = state.directorName;
+      document.getElementById('settingStudioName').value = state.studioName;
+      document.getElementById('settingDirectorName').value = state.directorName;
+      document.getElementById('settingHourlyRate').value = state.hourlyRate;
+      document.getElementById('settingCreepThreshold').value = state.creepThreshold;
+      document.documentElement.style.setProperty('--accent-mint', state.accentPrimary);
+      document.documentElement.style.setProperty('--accent-glow', state.accentGlow);
+      document.documentElement.style.setProperty('--accent-tint', `color-mix(in srgb, ${state.accentPrimary} 12%, transparent)`);
+      document.getElementById('liveTimerClock').textContent = formatDuration(state.timerSeconds);
+      document.getElementById('timerPauseIcon').classList.toggle('hidden', !state.timerRunning);
+      document.getElementById('timerPlayIcon').classList.toggle('hidden', state.timerRunning);
+      document.getElementById('timerPulseDot').classList.toggle('live-dot', state.timerRunning);
+      document.getElementById('timerPulseDot').classList.toggle('bg-mint-sage', state.timerRunning);
+      document.getElementById('timerPulseDot').classList.toggle('bg-amber-400', !state.timerRunning);
+
+      const clients = [
+        ['timerClientSelect', client => client.id],
+        ['quickTimeClient', client => client.id],
+        ['invClientSelect', client => client.name]
+      ];
+      clients.forEach(([selectId, getValue]) => {
+        const select = document.getElementById(selectId);
+        const current = select.value;
+        select.replaceChildren(...state.clients.map(client => {
+          const option = document.createElement('option');
+          option.value = getValue(client);
+          option.textContent = client.name;
+          option.className = 'bg-forest-deep';
+          return option;
+        }));
+        select.value = state.clients.some(client => getValue(client) === current)
+          ? current
+          : getValue(state.clients[0] || { id: '', name: '' });
+      });
+      document.getElementById('timerClientSelect').value = state.activeClientId;
+    }
+
+    // =========================================================================
+    // 2. NAVIGATION & VIEW SWITCHING
+    // =========================================================================
+    const viewMeta = {
+      overview: { title: 'Retainer Command & Scope Guard', crumb: 'Overview' },
+      portals: { title: 'Client Approval Portals', crumb: 'Client Portals' },
+      scopeguard: { title: 'Scope Guard & Deliverable Boundaries', crumb: 'Scope Guard' },
+      invoices: { title: 'Invoices & Stripe Escrow Milestones', crumb: 'Invoices & Milestones' },
+      timetracker: { title: 'Live Time Tracker & Scope Sync', crumb: 'Time Tracker' },
+      settings: { title: 'Workspace Settings & Integrations', crumb: 'Settings' }
+    };
+
+    function switchView(viewKey) {
+      state.activeView = viewKey;
+      persistState();
+
+      // Update sidebar active state
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn.dataset.nav === viewKey) {
+          btn.classList.add('nav-item-active');
+        } else {
+          btn.classList.remove('nav-item-active');
+        }
+      });
+
+      // Update header titles
+      const meta = viewMeta[viewKey] || viewMeta.overview;
+      document.getElementById('pageTitle').textContent = meta.title;
+      document.getElementById('currentBreadcrumb').textContent = meta.crumb;
+
+      // Toggle section visibility cleanly
+      const kpi = document.getElementById('kpiSection');
+      const scope = document.getElementById('scopeGuardSection');
+      const inv = document.getElementById('invoicesSection');
+      const time = document.getElementById('timeTrackerSection');
+      const settings = document.getElementById('settingsSection');
+
+      kpi.classList.toggle('hidden', !['overview', 'scopeguard'].includes(viewKey));
+      scope.classList.toggle('hidden', !['overview', 'portals', 'scopeguard'].includes(viewKey));
+      inv.classList.toggle('hidden', !['overview', 'invoices'].includes(viewKey));
+      time.classList.toggle('hidden', !['overview', 'timetracker'].includes(viewKey));
+      settings.classList.toggle('hidden', viewKey !== 'settings');
+
+      toggleMobileSidebar(false);
+    }
+
+    function toggleMobileSidebar(open) {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      if (open) {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+      } else {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+      }
+    }
+
+    // =========================================================================
+    // 3. LIVE ACTIVE TIMER WIDGET
+    // =========================================================================
+    function formatDuration(totalSec) {
+      const hrs = Math.floor(totalSec / 3600);
+      const mins = Math.floor((totalSec % 3600) / 60);
+      const secs = totalSec % 60;
+      return [hrs, mins, secs].map(v => String(v).padStart(2, '0')).join(':');
+    }
+
+    setInterval(() => {
+      if (state.timerRunning) {
+        state.timerSeconds++;
+        document.getElementById('liveTimerClock').textContent = formatDuration(state.timerSeconds);
+        if (state.timerSeconds % 15 === 0) persistState();
+      }
+    }, 1000);
+
+    function toggleLiveTimer() {
+      state.timerRunning = !state.timerRunning;
+      persistState();
+      const pauseIcon = document.getElementById('timerPauseIcon');
+      const playIcon = document.getElementById('timerPlayIcon');
+      const dot = document.getElementById('timerPulseDot');
+
+      if (state.timerRunning) {
+        pauseIcon.classList.remove('hidden');
+        playIcon.classList.add('hidden');
+        dot.classList.add('live-dot', 'bg-mint-sage');
+        dot.classList.remove('bg-amber-400');
+        showToast('Live studio timer resumed', 'info');
+      } else {
+        pauseIcon.classList.add('hidden');
+        playIcon.classList.remove('hidden');
+        dot.classList.remove('live-dot', 'bg-mint-sage');
+        dot.classList.add('bg-amber-400');
+        showToast('Timer paused', 'info');
+      }
+    }
+
+    function logActiveTimerToScope() {
+      const clientId = document.getElementById('timerClientSelect').value;
+      const client = state.clients.find(c => c.id === clientId) || state.clients[0];
+      const loggedHours = Math.max(0.25, Number((state.timerSeconds / 3600).toFixed(2)));
+
+      client.consumedHours = Number((client.consumedHours + loggedHours).toFixed(2));
+      state.timeLogs.unshift({
+        id: 't-' + Date.now(),
+        date: 'Just now',
+        clientId: client.id,
+        clientName: client.name,
+        note: 'Live Studio Session (Synced from Command Timer)',
+        hours: loggedHours,
+        rate: state.hourlyRate,
+        synced: true
+      });
+
+      state.timerSeconds = 0;
+      document.getElementById('liveTimerClock').textContent = '00:00:00';
+      renderAll();
+      showToast(`Logged ${loggedHours} hrs directly into ${client.name} scope`, 'success');
+    }
+
+    // =========================================================================
+    // 4. RENDER KPI CARDS & MULTI-CLIENT SCOPE GUARD
+    // =========================================================================
+    function renderKPIs() {
+      const totalRetainer = state.clients.reduce((sum, c) => sum + c.retainerAmount, 0);
+      const totalSaved = state.clients.reduce((sum, c) => {
+        const addons = c.deliverables.filter(d => d.type === 'addon').reduce((a, d) => a + d.fee, 0);
+        return sum + addons;
+      }, 0);
+      const totalAddonCount = state.clients.reduce((sum, c) => sum + c.deliverables.filter(d => d.type === 'addon').length, 0);
+      const totalTrackedHours = state.timeLogs.reduce((sum, t) => sum + t.hours, 0);
+      const pendingMilestonesTotal = state.invoices
+        .filter(i => i.status !== 'Paid')
+        .reduce((sum, i) => sum + i.amount, 0);
+
+      document.getElementById('kpiRetainerRev').textContent = '$' + totalRetainer.toLocaleString();
+      document.getElementById('kpiActiveClientsLabel').textContent = `${state.clients.length} Active Retainers`;
+      document.getElementById('kpiScopeSaved').textContent = '$' + totalSaved.toLocaleString();
+      document.getElementById('kpiAddonsCount').textContent = `${totalAddonCount} Paid Add-ons`;
+      document.getElementById('kpiUnbilledHours').textContent = `${totalTrackedHours.toFixed(1)} hrs`;
+      document.getElementById('kpiUnbilledValue').textContent = `$${(totalTrackedHours * state.hourlyRate).toLocaleString()} est.`;
+      document.getElementById('kpiPendingMilestones').textContent = '$' + pendingMilestonesTotal.toLocaleString();
+
+      const escrowedCount = state.invoices.filter(i => i.status === 'Escrowed').length;
+      const pendingCount = state.invoices.filter(i => i.status === 'Pending').length;
+      document.getElementById('kpiEscrowBreakdown').textContent = `${escrowedCount} Escrowed • ${pendingCount} Due`;
+      document.getElementById('navClientCount').textContent = state.clients.length;
+      document.getElementById('navPendingInvBadge').textContent = escrowedCount + pendingCount;
+    }
+
+    function renderScopeGuard() {
+      const client = state.clients.find(c => c.id === state.activeClientId) || state.clients[0];
+
+      // Render client tabs
+      const tabsContainer = document.getElementById('clientSwitcherTabs');
+      tabsContainer.innerHTML = state.clients.map(c => {
+        const active = c.id === client.id;
+        return `
+          <button onclick="selectClient('${c.id}')"
+            class="px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+              active
+                ? 'bg-mint-sage text-forest-deep shadow-mint-glow font-display'
+                : 'bg-forest-canvas text-cream-secondary hover:text-cream-primary border border-forest-border'
+            }">
+            ${escapeHTML(c.name)}
+          </button>
+        `;
+      }).join('');
+
+      // Update client metrics & utilization bar
+      const pct = Math.min(100, Math.round((client.consumedHours / client.retainerHours) * 1000) / 10);
+      const remaining = Math.max(0, (client.retainerHours - client.consumedHours)).toFixed(1);
+      const addonTotal = client.deliverables.filter(d => d.type === 'addon').reduce((s, d) => s + d.fee, 0);
+
+      document.getElementById('activeClientRetainerTag').textContent =
+        `Monthly Retainer: $${client.retainerAmount.toLocaleString()} / ${client.retainerHours} hrs • ${client.stakeholder}`;
+      document.getElementById('utilHoursText').textContent = `${client.consumedHours.toFixed(1)} / ${client.retainerHours.toFixed(1)} hrs`;
+      document.getElementById('utilPercentageBadge').textContent = `${pct}% Utilized`;
+      document.getElementById('utilInScopeValue').textContent = `Base Scope: $${client.retainerAmount.toLocaleString()}`;
+      document.getElementById('utilAddonValue').textContent = `Protected Add-Ons: +$${addonTotal.toLocaleString()}`;
+
+      const bar = document.getElementById('utilProgressBar');
+      bar.style.width = `${pct}%`;
+      bar.className = `h-full rounded-full transition-all duration-500 ${
+        pct >= state.creepThreshold
+          ? 'bg-gradient-to-r from-mint-sage via-amber-300 to-amber-400'
+          : 'bg-gradient-to-r from-mint-sage to-mint-glow'
+      }`;
+
+      // Update sidebar retainer bar to match active client
+      document.getElementById('sidebarRetainerPct').textContent = `${Math.round(pct)}%`;
+      document.getElementById('sidebarRetainerBar').style.width = `${pct}%`;
+
+      // Toggle Scope Creep Alert Banner
+      const banner = document.getElementById('scopeCreepBanner');
+      if (pct >= state.creepThreshold) {
+        banner.classList.remove('hidden');
+        document.getElementById('scopeCreepTitle').textContent =
+          `Scope Creep Guard Triggered — ${client.name} at ${pct}% Retainer Capacity`;
+        document.getElementById('scopeCreepSubtitle').textContent =
+          `Only ${remaining} hrs remain in base scope. Review new requests and create a paid change order at $${state.hourlyRate}/hr when needed.`;
+      } else {
+        banner.classList.add('hidden');
+      }
+
+      // Render deliverables list
+      const listEl = document.getElementById('deliverablesList');
+      listEl.innerHTML = client.deliverables.map(item => {
+        const isAddon = item.type === 'addon';
+        return `
+          <div class="p-3.5 sm:p-4 rounded-xl bg-forest-canvas/80 border ${isAddon ? 'border-mint-sage/35' : 'border-forest-border/80'} flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-mint-sage/50 transition-colors">
+            <div class="flex items-start sm:items-center gap-3.5">
+              <button onclick="toggleDeliverableApproval('${item.id}')" aria-label="Toggle Deliverable Sign-off"
+                class="w-5 h-5 mt-0.5 sm:mt-0 rounded-md border flex items-center justify-center shrink-0 transition-colors ${
+                  item.approved
+                    ? 'bg-mint-sage border-mint-sage text-forest-deep'
+                    : 'border-cream-muted hover:border-mint-sage'
+                }">
+                ${item.approved ? '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+              </button>
+              <div>
+                <p class="text-sm font-medium ${item.approved ? 'text-cream-primary' : 'text-cream-secondary'}">
+                  ${escapeHTML(item.title)}
+                </p>
+                <div class="flex flex-wrap items-center gap-2 mt-1">
+                  ${isAddon
+                    ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold bg-mint-tint text-mint-glow border border-mint-sage/30">PAID ADD-ON • +$${item.fee.toLocaleString()}</span>`
+                    : `<span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-forest-card text-cream-secondary border border-forest-border">IN-SCOPE RETAINER</span>`
+                  }
+                  <span class="text-[11px] font-mono text-cream-muted">${item.hours} hrs allocated</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between sm:justify-end gap-3 pl-8 sm:pl-0">
+              <span class="px-2.5 py-1 rounded-lg font-mono text-[11px] ${
+                item.approved
+                  ? 'bg-mint-tint text-mint-glow border border-mint-sage/25'
+                  : 'bg-forest-deep text-cream-muted border border-forest-border'
+              }">
+                ${item.approved ? 'Client Signed Off' : 'Awaiting Approval'}
+              </span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectClient(clientId) {
+      state.activeClientId = clientId;
+      document.getElementById('timerClientSelect').value = clientId;
+      persistState();
+      renderScopeGuard();
+    }
+
+    function toggleDeliverableApproval(deliverableId) {
+      const client = state.clients.find(c => c.id === state.activeClientId);
+      const item = client.deliverables.find(d => d.id === deliverableId);
+      if (!item) return;
+      item.approved = !item.approved;
+      persistState();
+      renderScopeGuard();
+      showToast(
+        item.approved ? `Marked "${item.title}" as Client Approved` : `Reopened "${item.title}" for review`,
+        'success'
+      );
+    }
+
+    // =========================================================================
+    // 5. INVOICES & MILESTONES LEDGER
+    // =========================================================================
+    function renderInvoices() {
+      const filter = document.getElementById('invoiceFilterSelect').value;
+      const filtered = filter === 'ALL' ? state.invoices : state.invoices.filter(i => i.status === filter);
+      const tbody = document.getElementById('invoicesTableBody');
+
+      tbody.innerHTML = filtered.map(inv => {
+        let badgeStyle = 'bg-mint-tint text-mint-glow border-mint-sage/30';
+        if (inv.status === 'Escrowed') badgeStyle = 'bg-sky-500/15 text-sky-300 border-sky-400/30';
+        if (inv.status === 'Pending') badgeStyle = 'bg-amber-500/15 text-amber-300 border-amber-400/30';
+
+        return `
+          <tr class="hover:bg-forest-canvas/50 transition-colors">
+            <td class="py-3.5 px-3 font-mono text-xs font-semibold text-cream-primary">${inv.id}</td>
+            <td class="py-3.5 px-3">
+              <div class="font-medium text-cream-primary text-xs sm:text-sm">${escapeHTML(inv.client)}</div>
+              <div class="text-xs text-cream-secondary">${escapeHTML(inv.milestone)}</div>
+            </td>
+            <td class="py-3.5 px-3 font-mono font-semibold text-cream-primary tabular-nums">$${inv.amount.toLocaleString()}</td>
+            <td class="py-3.5 px-3 font-mono text-xs text-cream-secondary">${inv.due}</td>
+            <td class="py-3.5 px-3">
+              <span class="px-2.5 py-1 rounded-lg font-mono text-[11px] font-semibold border ${badgeStyle}">
+                ${inv.status}
+              </span>
+            </td>
+            <td class="py-3.5 px-3 text-right">
+              ${inv.status === 'Paid'
+                ? `<span class="font-mono text-xs text-cream-muted">Marked paid</span>`
+                : `<div class="inline-flex items-center gap-2">
+                    <button onclick="sendStripeReminder('${inv.id}')"
+                      class="px-2.5 py-1.5 rounded-lg bg-forest-card hover:bg-forest-elevated border border-forest-border text-xs font-medium text-cream-primary transition-colors">
+                      Draft reminder
+                    </button>
+                    <button onclick="markInvoicePaid('${inv.id}')"
+                      class="px-2.5 py-1.5 rounded-lg bg-mint-tint hover:bg-mint-sage text-mint-glow hover:text-forest-deep border border-mint-sage/30 font-mono text-xs font-semibold transition-colors">
+                      Mark paid
+                    </button>
+                  </div>`
+              }
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function sendStripeReminder(invId) {
+      const invoice = state.invoices.find(item => item.id === invId);
+      if (!invoice) return;
+      const client = state.clients.find(item => item.name === invoice.client);
+      const subject = `Payment reminder: ${invoice.id}`;
+      const body = `Hello,\n\nThis is a reminder for ${invoice.milestone} (${invoice.id}) for $${invoice.amount.toLocaleString()}.\n\nThank you.`;
+      const recipient = client?.email || '';
+      window.top.location.assign(`mailto:${encodeURIComponent(recipient)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+    }
+
+    function markInvoicePaid(invId) {
+      const inv = state.invoices.find(i => i.id === invId);
+      if (inv) {
+        if (!window.confirm(`Mark ${invId} as paid in this browser? This will not process or verify a payment.`)) return;
+        inv.status = 'Paid';
+        renderAll();
+        showToast(`${invId} marked paid in this browser. No payment was processed.`, 'info');
+      }
+    }
+
+    // =========================================================================
+    // 6. TIME TRACKER LOG TABLE
+    // =========================================================================
+    function renderTimeLogs() {
+      const tbody = document.getElementById('timeEntriesTableBody');
+      tbody.innerHTML = state.timeLogs.map(entry => `
+        <tr class="hover:bg-forest-canvas/50 transition-colors">
+          <td class="py-3.5 px-3 font-mono text-xs text-cream-secondary">${escapeHTML(entry.date)}</td>
+          <td class="py-3.5 px-3 font-medium text-cream-primary text-xs sm:text-sm">${escapeHTML(entry.clientName)}</td>
+          <td class="py-3.5 px-3 text-xs sm:text-sm text-cream-secondary">${escapeHTML(entry.note)}</td>
+          <td class="py-3.5 px-3 font-mono font-semibold text-mint-glow tabular-nums">${entry.hours.toFixed(2)} hrs</td>
+          <td class="py-3.5 px-3 font-mono text-xs text-cream-primary tabular-nums">$${(entry.hours * entry.rate).toFixed(2)}</td>
+          <td class="py-3.5 px-3 text-right">
+            <span class="px-2.5 py-1 rounded-lg font-mono text-[11px] bg-mint-tint text-mint-glow border border-mint-sage/30">
+              Synced to Scope
+            </span>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function handleQuickTimeEntry(e) {
+      e.preventDefault();
+      const clientId = document.getElementById('quickTimeClient').value;
+      const note = document.getElementById('quickTimeNote').value.trim();
+      const hours = parseFloat(document.getElementById('quickTimeHours').value);
+      const client = state.clients.find(c => c.id === clientId);
+      if (!client || !note || isNaN(hours)) return;
+
+      client.consumedHours = Number((client.consumedHours + hours).toFixed(2));
+      state.timeLogs.unshift({
+        id: 't-' + Date.now(),
+        date: 'Today, Just now',
+        clientId: client.id,
+        clientName: client.name,
+        note,
+        hours,
+        rate: state.hourlyRate,
+        synced: true
+      });
+
+      document.getElementById('quickTimeNote').value = '';
+      renderAll();
+      showToast(`Synced ${hours} hrs to ${client.name} retainer scope`, 'success');
+    }
+
+    // =========================================================================
+    // 7. MODALS, CLIENT PORTAL PREVIEW, SEARCH & NOTIFICATIONS
+    // =========================================================================
+    function openModal(id) {
+      const el = document.getElementById(id);
+      el.classList.remove('hidden');
+      el.classList.add('flex');
+    }
+
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      el.classList.add('hidden');
+      el.classList.remove('flex');
+    }
+
+    function openAddTaskModal(defaultType) {
+      document.getElementById('taskTypeSelect').value = defaultType;
+      document.getElementById('addTaskModalTitle').textContent =
+        defaultType === 'addon' ? 'Create Paid Change Order (Add-On)' : 'Add In-Scope Deliverable';
+      toggleTaskFeeField();
+      openModal('addTaskModal');
+    }
+
+    function toggleTaskFeeField() {
+      const type = document.getElementById('taskTypeSelect').value;
+      const feeWrapper = document.getElementById('taskFeeWrapper');
+      feeWrapper.style.opacity = type === 'addon' ? '1' : '0.4';
+    }
+
+    function handleAddTaskSubmit(e) {
+      e.preventDefault();
+      const client = state.clients.find(c => c.id === state.activeClientId);
+      const type = document.getElementById('taskTypeSelect').value;
+      const title = document.getElementById('taskTitleInput').value.trim();
+      const hours = parseFloat(document.getElementById('taskHoursInput').value) || 4;
+      const fee = type === 'addon' ? (parseFloat(document.getElementById('taskFeeInput').value) || hours * state.hourlyRate) : 0;
+
+      client.deliverables.push({
+        id: 'd-' + Date.now(),
+        title,
+        hours,
+        type,
+        fee,
+        approved: false
+      });
+
+      if (type === 'in-scope') {
+        client.consumedHours = Number((client.consumedHours + hours).toFixed(1));
+      }
+
+      document.getElementById('taskTitleInput').value = '';
+      closeModal('addTaskModal');
+      renderAll();
+      showToast(
+        type === 'addon'
+          ? `Protected Paid Add-On (+$${fee.toLocaleString()}) added to ${client.name}`
+          : `In-scope deliverable added to ${client.name}`,
+        'success'
+      );
+    }
+
+    function handleCreateClient(e) {
+      e.preventDefault();
+      const name = document.getElementById('newClientName').value.trim();
+      const retainerAmount = parseFloat(document.getElementById('newClientRetainer').value) || 8000;
+      const retainerHours = parseFloat(document.getElementById('newClientHours').value) || 50;
+      const email = document.getElementById('newClientEmail').value.trim();
+      const slugBase = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'client';
+      const id = `${slugBase}-${Date.now()}`;
+
+      state.clients.push({
+        id,
+        name,
+        stakeholder: `Stakeholder • ${email}`,
+        email,
+        retainerAmount,
+        retainerHours,
+        consumedHours: 4.0,
+        slug: id,
+        deliverables: [
+          { id: 'd-' + Date.now(), title: 'Kickoff Architecture & Retainer Scope Baseline', hours: 4, type: 'in-scope', fee: 0, approved: true }
+        ]
+      });
+
+      // Add to dropdowns
+      ['timerClientSelect', 'quickTimeClient'].forEach(selId => {
+        const opt = document.createElement('option');
+        opt.value = id;
+        opt.textContent = name;
+        opt.className = 'bg-forest-deep';
+        document.getElementById(selId).appendChild(opt);
+      });
+
+      const invOpt = document.createElement('option');
+      invOpt.value = name;
+      invOpt.textContent = name;
+      document.getElementById('invClientSelect').appendChild(invOpt);
+
+      state.activeClientId = id;
+      closeModal('newClientModal');
+      e.target.reset();
+      renderAll();
+      showToast(`Created a local workspace preview for ${name}`, 'success');
+    }
+
+    function handleCreateInvoice(e) {
+      e.preventDefault();
+      const client = document.getElementById('invClientSelect').value;
+      const milestone = document.getElementById('invMilestoneInput').value.trim();
+      const amount = parseFloat(document.getElementById('invAmountInput').value) || 2500;
+      const status = document.getElementById('invStatusInput').value;
+      const nextNum = 90 + state.invoices.length;
+
+      state.invoices.unshift({
+        id: `INV-2026-0${nextNum}`,
+        client,
+        milestone,
+        amount,
+        due: 'Nov 28, 2026',
+        status
+      });
+
+      closeModal('createInvoiceModal');
+      e.target.reset();
+      renderAll();
+      showToast(`Invoice INV-2026-0${nextNum} issued for ${client}`, 'success');
+    }
+
+    function copyPortalLink() {
+      const client = state.clients.find(c => c.id === state.activeClientId);
+      if (!client) return;
+      const summary = [
+        `${client.name} — Client Retainer Summary`,
+        `Contact: ${client.stakeholder} (${client.email})`,
+        `Monthly retainer: $${client.retainerAmount.toLocaleString()} for ${client.retainerHours} hours`,
+        `Hours used: ${client.consumedHours.toFixed(1)} / ${client.retainerHours}`,
+        '',
+        'Deliverables:',
+        ...client.deliverables.map(item => `• ${item.title} — ${item.hours} hrs${item.type === 'addon' ? ` — $${item.fee.toLocaleString()} add-on` : ''} — ${item.approved ? 'approved' : 'awaiting approval'}`)
+      ].join('\n');
+      const fallbackCopy = () => {
+        const input = document.createElement('textarea');
+        input.value = summary;
+        input.style.position = 'fixed';
+        input.style.opacity = '0';
+        document.body.appendChild(input);
+        input.select();
+        const copied = document.execCommand('copy');
+        input.remove();
+        return copied;
+      };
+      if (navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(summary)
+          .then(() => showToast('Client summary copied. This preview does not create a public portal.', 'success'))
+          .catch(() => showToast(fallbackCopy() ? 'Client summary copied.' : 'Could not copy summary; check clipboard permissions.', 'info'));
+      } else {
+        showToast(fallbackCopy() ? 'Client summary copied.' : 'Could not copy summary; check clipboard permissions.', 'info');
+      }
+    }
+
+    function openPortalPreview() {
+      const client = state.clients.find(c => c.id === state.activeClientId);
+      document.getElementById('portalPreviewTitle').textContent = `${client.name} — Client Portal Preview`;
+      document.getElementById('portalShareUrlText').textContent = 'Preview only; copy a summary to share manually';
+
+      const body = document.getElementById('portalPreviewBody');
+      body.innerHTML = `
+        <div class="p-4 rounded-xl bg-forest-canvas border border-forest-border flex items-center justify-between">
+          <div>
+            <p class="text-xs font-mono text-mint-sage">PREPARED FOR</p>
+            <p class="text-sm font-semibold text-cream-primary mt-0.5">${escapeHTML(client.stakeholder)}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-xs font-mono text-cream-muted">RETAINER UTILIZATION</p>
+            <p class="font-mono font-bold text-sm text-mint-glow mt-0.5">${client.consumedHours} / ${client.retainerHours} hrs</p>
+          </div>
+        </div>
+        <div class="space-y-2">
+          ${client.deliverables.map(d => `
+            <div class="p-3 rounded-xl bg-forest-deep/90 border border-forest-border flex items-center justify-between text-xs">
+              <span class="text-cream-primary font-medium">${escapeHTML(d.title)}</span>
+              <span class="font-mono ${d.approved ? 'text-mint-glow' : 'text-amber-300'}">
+                ${d.approved ? '✓ Signed Off' : 'Pending Sign-off'}
+              </span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+      openModal('portalPreviewModal');
+    }
+
+    // Settings handlers
+    function saveWorkspaceSettings(e) {
+      e.preventDefault();
+      const studioName = document.getElementById('settingStudioName').value.trim();
+      const director = document.getElementById('settingDirectorName').value.trim();
+      const rate = parseFloat(document.getElementById('settingHourlyRate').value) || 165;
+      const threshold = parseFloat(document.getElementById('settingCreepThreshold').value) || 85;
+
+      state.studioName = studioName || 'My Studio';
+      state.directorName = director || 'Studio Director';
+      state.hourlyRate = Math.max(25, Math.min(1000, rate));
+      state.creepThreshold = Math.max(50, Math.min(100, threshold));
+      document.getElementById('studioNameDisplay').textContent = state.studioName;
+      document.getElementById('profileNameDisplay').textContent = state.directorName;
+      renderAll();
+      showToast('Workspace settings & Scope Guard thresholds updated', 'success');
+    }
+
+    function applyAccentTheme(primary, glow) {
+      state.accentPrimary = primary;
+      state.accentGlow = glow;
+      document.documentElement.style.setProperty('--accent-mint', primary);
+      document.documentElement.style.setProperty('--accent-glow', glow);
+      document.documentElement.style.setProperty('--accent-tint', `color-mix(in srgb, ${primary} 12%, transparent)`);
+      persistState();
+      showToast(`Portal accent swatch updated (${primary})`, 'info');
+    }
+
+    // Global Search
+    function handleGlobalSearch(query) {
+      const box = document.getElementById('globalSearchResults');
+      const q = query.trim().toLowerCase();
+      if (!q) {
+        box.classList.add('hidden');
+        return;
+      }
+
+      const matches = [];
+      state.clients.forEach(c => {
+        if (c.name.toLowerCase().includes(q)) {
+          matches.push({ label: c.name, sub: 'Client Workspace', action: `selectClient('${c.id}'); switchView('scopeguard');` });
+        }
+        c.deliverables.forEach(d => {
+          if (d.title.toLowerCase().includes(q)) {
+            matches.push({ label: d.title, sub: `${c.name} Deliverable`, action: `selectClient('${c.id}'); switchView('scopeguard');` });
+          }
+        });
+      });
+
+      state.invoices.forEach(inv => {
+        if (inv.id.toLowerCase().includes(q) || inv.milestone.toLowerCase().includes(q)) {
+          matches.push({ label: `${inv.id} — $${inv.amount.toLocaleString()}`, sub: inv.client, action: `switchView('invoices');` });
+        }
+      });
+
+      box.innerHTML = matches.length
+        ? matches.slice(0, 6).map(m => `
+            <button onclick="${m.action} document.getElementById('globalSearchResults').classList.add('hidden');"
+              class="w-full text-left px-4 py-2.5 hover:bg-forest-card flex items-center justify-between border-b border-forest-border/40 last:border-none">
+              <span class="text-xs font-medium text-cream-primary truncate pr-2">${escapeHTML(m.label)}</span>
+              <span class="text-[10px] font-mono text-mint-sage shrink-0">${escapeHTML(m.sub)}</span>
+            </button>
+          `).join('')
+        : `<div class="px-4 py-3 text-xs text-cream-muted">No matching clients, deliverables, or invoices.</div>`;
+
+      box.classList.remove('hidden');
+    }
+
+    // Notifications Dropdown
+    function renderNotifications() {
+      const list = document.getElementById('notificationsList');
+      const unreadCount = state.notifications.filter(n => n.unread).length;
+      const badge = document.getElementById('notifBadgeCount');
+      badge.textContent = unreadCount;
+      badge.classList.toggle('hidden', unreadCount === 0);
+
+      list.innerHTML = state.notifications.map(n => `
+        <div class="p-3.5 ${n.unread ? 'bg-forest-card/40' : ''}">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-cream-primary">${n.title}</span>
+            <span class="text-[10px] font-mono text-cream-muted">${n.time}</span>
+          </div>
+          <p class="text-xs text-cream-secondary mt-1">${n.desc}</p>
+        </div>
+      `).join('');
+    }
+
+    function toggleNotificationsDropdown() {
+      document.getElementById('notificationsDropdown').classList.toggle('hidden');
+    }
+
+    function markAllNotificationsRead() {
+      state.notifications.forEach(n => n.unread = false);
+      persistState();
+      renderNotifications();
+      showToast('All studio alerts marked as read', 'info');
+    }
+
+    // Toast Feedback Engine
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto px-4 py-3 rounded-xl bg-forest-deep border ${
+        type === 'success' ? 'border-mint-sage/60' : 'border-forest-border'
+      } shadow-2xl flex items-center gap-2.5 text-xs font-medium text-cream-primary transition-all duration-300`;
+      toast.innerHTML = `
+        <span class="w-2 h-2 rounded-full ${type === 'success' ? 'bg-mint-sage' : 'bg-mint-glow'}"></span>
+        <span>${escapeHTML(message)}</span>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(8px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
+    }
+
+    // Master Render & Initialization
+    function renderAll() {
+      persistState();
+      renderKPIs();
+      renderScopeGuard();
+      renderInvoices();
+      renderTimeLogs();
+      renderNotifications();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      restoreState();
+      const requestedClient = new URLSearchParams(window.location.search).get('client');
+      const sharedClient = state.clients.find(client => client.slug === requestedClient);
+      if (sharedClient) state.activeClientId = sharedClient.id;
+      if (!viewMeta[state.activeView]) state.activeView = 'overview';
+      syncWorkspaceControls();
+      renderAll();
+      switchView(state.activeView);
+    });
+  </script>
+</body>
+</html>
