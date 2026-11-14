@@ -5,7 +5,12 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
-let supabase;
+// Create the client as the app loads so Supabase can consume an OAuth callback
+// hash even when the redirect lands on a route that does not call an auth
+// method (for example, /dashboard).
+const supabase = isSupabaseConfigured
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null;
 
 function getSupabaseClient() {
   if (!isSupabaseConfigured) {
@@ -14,7 +19,6 @@ function getSupabaseClient() {
     );
   }
 
-  supabase ??= createClient(supabaseUrl, supabaseAnonKey);
   return supabase;
 }
 
