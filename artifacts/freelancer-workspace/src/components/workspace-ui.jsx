@@ -33,6 +33,17 @@ function formatDate(value) {
 function initials(name) {
     return name.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase();
 }
+function asList(value, resource) {
+    if (Array.isArray(value))
+        return value;
+    if (value && typeof value === 'object') {
+        for (const key of [resource, 'items', 'data', 'results']) {
+            if (Array.isArray(value[key]))
+                return value[key];
+        }
+    }
+    return [];
+}
 function useInvalidate() {
     const queryClient = useQueryClient();
     return (keys) => {
@@ -112,7 +123,8 @@ function Clients() {
     const [search, setSearch] = useState('');
     const [editing, setEditing] = useState(null);
     const [modal, setModal] = useState(false);
-    const clients = useMemo(() => (query.data ?? []).filter((client) => `${client.name} ${client.email} ${client.company ?? ''}`.toLowerCase().includes(search.toLowerCase())), [query.data, search]);
+    const clientRecords = asList(query.data, 'clients');
+    const clients = useMemo(() => clientRecords.filter((client) => `${client.name ?? ''} ${client.email ?? ''} ${client.company ?? ''}`.toLowerCase().includes(search.toLowerCase())), [clientRecords, search]);
     const save = (form) => {
         if (!form.name.trim() || !form.email.trim())
             return;
